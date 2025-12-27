@@ -8,46 +8,34 @@
     <style>
         body { background: #111; color: white; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif; padding: 10px; }
         textarea { width: 95%; height: 80px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; margin-bottom: 5px; font-size: 14px; }
-        .controls { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; align-items: center; }
+        .controls { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
         button { background: #007AFF; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
        
-        /* キャプチャエリア：Goalinkブランドを意識した黒背景と質感 */
-        #capture-area {
-            width: 480px;
-            background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'), #000;
-            padding: 25px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-        }
-       
+        #capture-area { width: 480px; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'), #000; padding: 25px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 10px; }
-        .team-container { width: 45%; overflow: hidden; display: flex; justify-content: center; }
-        .team-name { font-size: 20px; font-weight: 800; text-align: center; color: #fff; outline: none; white-space: nowrap; display: inline-block; transform-origin: center center; }
-        .vs-text { font-size: 14px; color: #fff; font-weight: bold; margin: 0 5px; }
+        .team-container { width: 45%; display: flex; justify-content: center; overflow: hidden; }
+        .team-name { font-size: 20px; font-weight: 800; color: #fff; white-space: nowrap; transform-origin: center; outline: none; }
+        .vs-text { font-size: 14px; color: #fff; font-weight: bold; }
        
         .main { display: flex; justify-content: space-between; }
-        .col { width: 48%; display: flex; flex-direction: column; }
-        .label { font-size: 11px; font-weight: 800; margin: 15px 0 8px 0; border-left: 4px solid #34c759; padding-left: 8px; letter-spacing: 0.5px; color: #fff; }
+        .col { width: 48%; }
+        .label { font-size: 11px; font-weight: 800; margin: 15px 0 8px 0; border-left: 4px solid #34c759; padding-left: 8px; color: #fff; }
        
-        .row { display: flex; align-items: center; height: 34px; border-bottom: 1px solid #1a1a1a; position: relative; overflow: hidden; }
-        .pos { width: 32px; color: #777; font-size: 11px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+        .row { display: flex; align-items: center; height: 34px; border-bottom: 1px solid #1a1a1a; position: relative; }
+        .pos { width: 32px; color: #777; font-size: 11px; font-weight: bold; flex-shrink: 0; cursor: pointer; }
         .no { width: 28px; font-weight: 800; margin-right: 10px; text-align: right; font-size: 14px; color: #aaa; flex-shrink: 0; }
        
-        /* 名前の自動縮小設定 */
-        .name-container { flex: 1; display: flex; align-items: center; overflow: hidden; }
-        .name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; display: inline-block; transform-origin: left center; outline: none; border-bottom: 1px dashed transparent; width: 100%; }
+        .name-container { flex: 1; overflow: hidden; display: flex; align-items: center; }
+        .name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; display: inline-block; transform-origin: left center; outline: none; width: 100%; }
        
         .move-btn { font-size: 11px; padding: 3px 8px; cursor: pointer; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; margin-left: 5px; flex-shrink: 0; }
         .taking-photo .move-btn { display: none; }
-        #res img { max-width: 100%; margin-top: 20px; border: 2px solid #444; }
+        #res img { max-width: 100%; margin-top: 20px; border: 2px solid #444; display: block; margin-inline: auto; }
     </style>
 </head>
 <body>
-    <div style="text-align: center; margin-bottom: 10px;">
-        <span style="font-weight: bold; letter-spacing: 1px;">Goalink Editor <span style="font-size: 12px; font-weight: normal;">by HEKION</span></span>
-    </div>
-    <textarea id="it" placeholder="PC版・スマホ版どちらのコピーでも貼り付けOK"></textarea>
+    <div style="text-align: center; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px;">Goalink Editor by HEKION</div>
+    <textarea id="it" placeholder="PC・スマホどちらのデータもそのまま貼り付け"></textarea>
     <div class="controls">
         <button onclick="parse()">1. 読み込む</button>
         <button onclick="takePhoto()" style="background:#34c759;">2. 画像生成</button>
@@ -55,13 +43,13 @@
 
     <div id="capture-area">
         <div class="header">
-            <div class="team-container"><div class="team-name" contenteditable="true" id="t1" oninput="adjustTeamNames()">HOME</div></div>
+            <div class="team-container"><div class="team-name" contenteditable="true" id="t1">HOME</div></div>
             <div class="vs-text">VS</div>
-            <div class="team-container"><div class="team-name" contenteditable="true" id="t2" oninput="adjustTeamNames()">AWAY</div></div>
+            <div class="team-container"><div class="team-name" contenteditable="true" id="t2">AWAY</div></div>
         </div>
         <div class="main">
-            <div class="col" id="col1"></div>
-            <div class="col" id="col2"></div>
+            <div id="col1" class="col"></div>
+            <div id="col2" class="col"></div>
         </div>
     </div>
     <div id="res"></div>
@@ -75,49 +63,56 @@
             const lines = raw.split('\n');
             players = [];
            
-            let hP = "GK", aP = "GK", isB = false;
-            let currentSide = 0; // 0:左, 1:右
-            let firstTeamName = "";
+            let hP = "GK", aP = "GK";
+            let isB = false;
+            let currentSide = 0;
+            let teamCount = 0;
+            let lastTeamName = "";
 
             lines.forEach(line => {
                 const t = line.trim();
                 if (!t) return;
 
-                // チーム名の切り替え（PC版対応）
-                if (!t.match(/\d/) && !t.includes("メンバー") && t.length > 1 && !posCycle.includes(t)) {
-                    if (!firstTeamName) {
-                        firstTeamName = t;
-                        document.getElementById('t1').innerText = t;
-                    } else if (t !== firstTeamName) {
-                        currentSide = 1;
-                        isB = false;
-                        document.getElementById('t2').innerText = t;
+                // チーム名・セクション判定
+                if (t.includes("スターティング")) { isB = false; return; }
+                if (t.includes("控えメンバー")) { isB = true; return; }
+
+                // ポジション行
+                if (posCycle.includes(t)) {
+                    if (currentSide === 0) hP = t; else aP = t;
+                    return;
+                }
+
+                // チーム名判定（数字を含まない、ポジション名でもない、"メンバー"でもない）
+                if (!t.match(/\d/) && t.length > 1 && !t.includes("メンバー")) {
+                    if (t !== lastTeamName) {
+                        teamCount++;
+                        lastTeamName = t;
+                        if (teamCount === 1) {
+                            document.getElementById('t1').innerText = t;
+                            currentSide = 0;
+                        } else {
+                            document.getElementById('t2').innerText = t;
+                            currentSide = 1;
+                            isB = false; // アウェイチームの解析開始時はスタメンから
+                        }
                     }
+                    return;
                 }
 
-                if (t.includes("控えメンバー")) isB = true;
-                if (t.includes("スターティング")) isB = false;
-               
-                // ポジションの更新
-                const pMatch = t.match(/GK|DF|MF|FW/);
-                if (pMatch) {
-                    if (currentSide === 0) hP = pMatch[0]; else aP = pMatch[0];
-                }
+                // 選手解析
+                const m = t.match(/^(\d+)\s+(.+)$/); // PC版: 1 選手名
+                const dMatches = [...t.matchAll(/(\d+)\s+([^\d\n\r]+)/g)]; // スマホ版: 1 選手A 2 選手B
 
-                // 選手情報の抽出（スマホ横並び or PC縦並び両対応）
-                const doubleMatches = [...t.matchAll(/(\d+)\s+([^\d\n\r]+)/g)];
-               
-                if (doubleMatches.length >= 2) {
-                    // スマホ版（1行に2人）
-                    doubleMatches.forEach((m, idx) => {
-                        let name = m[2].trim().split(/\s{2,}/)[0].replace(/　/g, " ");
-                        let side = (idx === 1) ? 1 : 0;
-                        players.push({ p: (side === 0 ? hP : aP), n: m[1], nm: name, b: isB, side: side });
+                if (dMatches.length >= 2) {
+                    // スマホ横並び形式
+                    dMatches.forEach((match, idx) => {
+                        let name = match[2].trim().split(/\s{2,}/)[0].replace(/　/g, " ");
+                        players.push({ p: (idx === 0 ? hP : aP), n: match[1], nm: name, b: isB, side: idx });
                     });
-                } else if (doubleMatches.length === 1) {
-                    // PC版（1行に1人）
-                    let m = doubleMatches[0];
-                    let name = m[2].replace(/\d+'.*/, "").trim().replace(/　/g, " "); // 交代分数等を除去
+                } else if (m) {
+                    // PC縦並び形式
+                    let name = m[2].replace(/\d+'.*/, "").trim().replace(/　/g, " ");
                     players.push({ p: (currentSide === 0 ? hP : aP), n: m[1], nm: name, b: isB, side: currentSide });
                 }
             });
@@ -126,70 +121,55 @@
 
         function render() {
             const draw = (side) => {
-                const list = players.map((p, i) => ({...p, originalIndex: i})).filter(p => p.side === side);
+                const list = players.map((p, i) => ({...p, idx: i})).filter(p => p.side === side);
                 const s = list.filter(p => !p.b);
                 const b = list.filter(p => p.b);
-                let h = `<div class="label">STARTERS</div>` + s.map(p => genRow(p, p.originalIndex)).join('');
-                h += `<div class="label">SUBSTITUTES</div>` + b.map(p => genRow(p, p.originalIndex)).join('');
-                return h;
+                let html = `<div class="label">STARTERS</div>` + s.map(p => genRow(p)).join('');
+                html += `<div class="label">SUBSTITUTES</div>` + b.map(p => genRow(p)).join('');
+                return html;
             };
             document.getElementById('col1').innerHTML = draw(0);
             document.getElementById('col2').innerHTML = draw(1);
-            setTimeout(() => { adjustLongNames(); adjustTeamNames(); }, 100);
+            setTimeout(adjustAll, 50);
         }
 
-        function genRow(p, globalIdx) {
+        function genRow(p) {
             return `<div class="row">
-                <span class="pos" onclick="rotatePos(${globalIdx})">${p.p}</span>
+                <span class="pos" onclick="rotatePos(${p.idx})">${p.p}</span>
                 <span class="no">${p.n}</span>
-                <div class="name-container">
-                    <span class="name" contenteditable="true" oninput="players[${globalIdx}].nm=this.innerText; adjustLongNames();">${p.nm}</span>
-                </div>
-                <span class="move-btn" onclick="move(${globalIdx})">${p.side === 0 ? '→' : '←'}</span>
+                <div class="name-container"><span class="name" contenteditable="true" oninput="players[${p.idx}].nm=this.innerText; adjustAll();">${p.nm}</span></div>
+                <span class="move-btn" onclick="move(${p.idx})">${p.side === 0 ? '→' : '←'}</span>
             </div>`;
         }
 
-        function rotatePos(idx) {
-            let currentIdx = posCycle.indexOf(players[idx].p);
-            players[idx].p = posCycle[(currentIdx + 1) % posCycle.length];
+        function rotatePos(i) {
+            players[i].p = posCycle[(posCycle.indexOf(players[i].p) + 1) % posCycle.length];
             render();
         }
 
-        function move(idx) {
-            players[idx].side = (players[idx].side === 0) ? 1 : 0;
+        function move(i) {
+            players[i].side = players[i].side === 0 ? 1 : 0;
             render();
         }
 
-        function adjustTeamNames() {
-            document.querySelectorAll('.team-name').forEach(el => {
-                const container = el.parentElement;
-                el.style.transform = 'scale(1)';
-                const ratio = container.offsetWidth / (el.offsetWidth + 4);
-                if (ratio < 1) el.style.transform = `scale(${ratio})`;
-            });
-        }
-
-        function adjustLongNames() {
-            document.querySelectorAll('.name').forEach(el => {
-                const container = el.parentElement;
+        function adjustAll() {
+            document.querySelectorAll('.name, .team-name').forEach(el => {
                 el.style.transform = 'scaleX(1)';
-                const ratio = container.offsetWidth / (el.offsetWidth + 2);
-                if (ratio < 1) el.style.transform = `scaleX(${ratio})`;
+                const pw = el.parentElement.offsetWidth;
+                const ew = el.offsetWidth;
+                if (ew > pw) el.style.transform = `scaleX(${(pw - 2) / ew})`;
             });
         }
 
         function takePhoto() {
             const area = document.getElementById('capture-area');
             area.classList.add('taking-photo');
-            document.activeElement.blur();
-            setTimeout(() => {
-                html2canvas(area, {scale:2, backgroundColor:"#000"}).then(c => {
-                    const res = document.getElementById('res');
-                    res.innerHTML = '<p style="color:#888; font-size:12px; margin-bottom:10px; text-align:center;">画像長押しで保存</p>';
-                    res.appendChild(new Image()).src = c.toDataURL();
-                    area.classList.remove('taking-photo');
-                });
-            }, 200);
+            html2canvas(area, {scale:2, backgroundColor:"#000"}).then(c => {
+                const res = document.getElementById('res');
+                res.innerHTML = '<p style="text-align:center;font-size:12px;color:#888;">画像長押しで保存</p>';
+                res.appendChild(new Image()).src = c.toDataURL();
+                area.classList.remove('taking-photo');
+            });
         }
     </script>
 </body>
