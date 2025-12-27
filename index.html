@@ -13,44 +13,21 @@
        
         #capture-area { width: 480px; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'), #000; padding: 25px; margin: 0 auto; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 10px; }
-       
-        /* チーム名エリア */
-        .team-container { width: 45%; display: flex; justify-content: center; }
-        .team-name { font-size: 20px; font-weight: 800; color: #fff; outline: none; border-bottom: 1px dashed #444; text-align: center; width: 100%; overflow: hidden; white-space: nowrap; }
-
+        .team-container { width: 45%; display: flex; justify-content: center; overflow: hidden; }
+        .team-name { font-size: 20px; font-weight: 800; color: #fff; white-space: nowrap; outline: none; border-bottom: 1px dashed #444; }
         .vs-text { font-size: 14px; font-weight: bold; }
+       
         .main { display: flex; justify-content: space-between; }
         .col { width: 48%; }
         .label { font-size: 11px; font-weight: 800; margin: 15px 0 8px 0; border-left: 4px solid #34c759; padding-left: 8px; color: #fff; }
        
-        .row { display: flex; align-items: center; height: 34px; border-bottom: 1px solid #1a1a1a; }
+        .row { display: flex; align-items: center; height: 34px; border-bottom: 1px solid #1a1a1a; position: relative; }
         .pos { width: 32px; color: #777; font-size: 11px; font-weight: bold; flex-shrink: 0; cursor: pointer; }
         .no { width: 28px; font-weight: 800; margin-right: 10px; text-align: right; font-size: 14px; color: #aaa; flex-shrink: 0; }
        
-        /* ★解決策：名前の自動縮小設定 */
-        .name-container {
-            flex: 1;
-            overflow: hidden;
-            display: grid; /* Gridを使うことで枠いっぱいに広げる */
-        }
-        .name {
-            font-size: 16px;
-            font-weight: 800;
-            color: #eee;
-            outline: none;
-            white-space: nowrap;
-            /* ここが魔法：枠からはみ出たら横幅を圧縮する */
-            display: inline-block;
-            width: 100%;
-            min-width: 0;
-            text-overflow: clip;
-            /* 表示の崩れを防ぐための設定 */
-            aspect-ratio: auto;
-        }
-
-        /* 編集中の見た目調整 */
-        .name:focus { background: #333; }
-
+        .name-container { flex: 1; overflow: hidden; display: flex; align-items: center; height: 100%; }
+        .name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; display: inline-block; transform-origin: left center; outline: none; }
+       
         .move-btn { font-size: 11px; padding: 3px 8px; cursor: pointer; background: #333; border: 1px solid #555; border-radius: 4px; margin-left: 5px; flex-shrink: 0; color: #fff; }
         .taking-photo .move-btn { display: none; }
         #res img { max-width: 100%; display: block; margin: 20px auto; border: 2px solid #444; }
@@ -58,7 +35,7 @@
 </head>
 <body>
     <div style="text-align: center; margin-bottom: 10px; font-weight: bold;">Goalink Editor by HEKION</div>
-    <textarea id="it" placeholder="選手データを貼り付けてください"></textarea>
+    <textarea id="it" placeholder="選手データを貼り付け"></textarea>
     <div class="controls">
         <button onclick="parse()">1. 読み込む</button>
         <button onclick="takePhoto()" style="background:#34c759;">2. 画像生成</button>
@@ -81,26 +58,34 @@
             const raw = document.getElementById('it').value;
             const lines = raw.split('\n');
             players = [];
-            let currentPos = "GK", isB = false;
+            let currentP = "GK";
+            let isB = false;
 
             lines.forEach(line => {
                 const t = line.trim();
-                if (!t || t.includes("メンバー")) {
-                    if (t.includes("控え")) isB = true;
-                    if (t.includes("スタ")) isB = false;
-                    return;
-                }
-                if (posCycle.includes(t)) { currentPos = t; return; }
+                if (!t) return;
 
+                // 1. ポジション判定
+                const foundPos = posCycle.find(p => t === p || t.startsWith(p + " "));
+                if (foundPos) { currentP = foundPos; return; }
+
+                // 2. 控え・スタメン判定
+                if (t.includes("控え")) { isB = true; return; }
+                if (t.includes("スターティング")) { isB = false; return; }
+
+                // 3. 選手解析
                 const dMatches = [...t.matchAll(/(\d+)\s+([^\d\n\r]+)/g)];
+               
                 if (dMatches.length >= 2) {
-                    dMatches.forEach((m, idx) => {
-                        let nm = m[2].trim().split(/\s{2,}/)[0].replace(/　/g, " ");
-                        players.push({ p: currentPos, n: m[1], nm: nm, b: isB, side: idx });
+                    // スマホ版（1行に左右2人）
+                    dMatches.forEach((match, idx) => {
+                        let name = match[2].trim().split(/\s{2,}/)[0].replace(/　/g, " ");
+                        players.push({ p: currentP, n: match[1], nm: name, b: isB, side: idx });
                     });
                 } else if (dMatches.length === 1) {
-                    let nm = dMatches[0][2].replace(/\d+'.*/, "").trim().replace(/　/g, " ");
-                    players.push({ p: currentPos, n: dMatches[0][1], nm: nm, b: isB, side: 0 });
+                    // PC版（1行に1人）
+                    let name = dMatches[0][2].replace(/\d+'.*/, "").trim().replace(/　/g, " ");
+                    players.push({ p: currentP, n: dMatches[0][1], nm: name, b: isB, side: 0 });
                 }
             });
             render();
@@ -109,13 +94,14 @@
         function render() {
             const draw = (s) => {
                 const list = players.map((p, i) => ({...p, i})).filter(p => p.side === s);
-                return `<div class="label">STARTERS</div>` + list.filter(p => !p.b).map(p => genRow(p)).join('') +
-                       `<div class="label">SUBSTITUTES</div>` + list.filter(p => p.b).map(p => genRow(p)).join('');
+                const starters = list.filter(p => !p.b);
+                const subs = list.filter(p => p.b);
+                let html = `<div class="label">STARTERS</div>` + starters.map(p => genRow(p)).join('');
+                if (subs.length > 0) html += `<div class="label">SUBSTITUTES</div>` + subs.map(p => genRow(p)).join('');
+                return html;
             };
             document.getElementById('col1').innerHTML = draw(0);
             document.getElementById('col2').innerHTML = draw(1);
-           
-            // JavaScriptによる強制縮小（予備として実行）
             setTimeout(autoScale, 100);
         }
 
@@ -124,7 +110,7 @@
                 <span class="pos" onclick="rotatePos(${p.i})">${p.p}</span>
                 <span class="no">${p.n}</span>
                 <div class="name-container">
-                    <span class="name" contenteditable="true" onblur="players[${p.i}].nm=this.innerText; autoScale();">${p.nm}</span>
+                    <span class="name" contenteditable="true" oninput="players[${p.i}].nm=this.innerText; autoScale();">${p.nm}</span>
                 </div>
                 <span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span>
             </div>`;
@@ -143,13 +129,13 @@
         function autoScale() {
             document.querySelectorAll('.name').forEach(el => {
                 el.style.transform = 'scaleX(1)';
-                const containerWidth = el.parentElement.offsetWidth;
-                const textWidth = el.scrollWidth;
-                if (textWidth > containerWidth) {
-                    const ratio = containerWidth / textWidth;
-                    el.style.transform = `scaleX(${ratio})`;
-                    el.style.width = textWidth + "px"; // 描画領域を確保
-                    el.style.transformOrigin = "left center";
+                const pw = el.parentElement.clientWidth;
+                const ew = el.scrollWidth;
+                if (ew > pw && pw > 0) {
+                    el.style.transform = `scaleX(${pw / ew})`;
+                    el.style.width = ew + "px";
+                } else {
+                    el.style.width = "auto";
                 }
             });
         }
@@ -157,8 +143,7 @@
         function takePhoto() {
             const area = document.getElementById('capture-area');
             area.classList.add('taking-photo');
-            autoScale(); // 生成前に確実に実行
-           
+            autoScale();
             setTimeout(() => {
                 html2canvas(area, { scale: 2, backgroundColor: "#000" }).then(c => {
                     const res = document.getElementById('res');
