@@ -27,7 +27,7 @@
         .no { width: 28px; font-weight: 800; margin-right: 8px; text-align: right; font-size: 14px; color: #aaa; }
         
         .name-container { flex: 1; overflow: hidden; display: flex; align-items: center; }
-        .name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; outline: none; transform-origin: left center; }
+        .name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; outline: none; transform-origin: left center; width: 100%; }
         
         .move-btn { font-size: 10px; padding: 2px 6px; cursor: pointer; background: #333; border: 1px solid #555; border-radius: 4px; margin-left: 5px; color: #fff; }
         .taking-photo .move-btn { display: none; }
@@ -60,13 +60,13 @@
         const posCycle = ["GK", "DF", "MF", "FW"];
 
         function parse() {
-            const raw = document.getElementById('it').value;
-            // まず全角スペースをすべて半角スペースに置き換えてから1行ずつに分ける
-            const sanitizedRaw = raw.replace(/　/g, " ");
-            const lines = sanitizedRaw.split('\n');
+            const raw = document.getElementById('it').value.replace(/　/g, " ");
+            const lines = raw.split('\n');
             
             players = [];
             let currentP = "GK", isB = false;
+            let starterCount = 0;
+            let subCount = 0;
 
             lines.forEach(line => {
                 const t = line.trim();
@@ -79,25 +79,41 @@
                 if (t.match(/控え|SUB/i)) isB = true;
                 if (t.match(/先発|スタメン|STARTER/i)) isB = false;
 
-                // 数字から始まり、次の数字が出てくる手前までを「名前」として丸ごと拾う
-                // この時点でスペースは半角に統一されている
                 const regex = /(\d+)\s+([^0-9\n\r]+)/g;
                 let matches = [...t.matchAll(regex)];
 
-                if (matches.length > 0) {
-                    matches.forEach((m, idx) => {
-                        let num = m[1];
-                        let name = m[2].trim();
-                        name = name.split(/交代|▲|▼/)[0].trim();
+                matches.forEach((m, idx) => {
+                    let num = m[1];
+                    let name = m[2].trim();
+                    
+                    // 「名前 GK」などの余計な情報をカット
+                    name = name.replace(/\s(GK|DF|MF|FW)$/i, "");
+                    name = name.split(/交代|▲|▼|[\(\[（]/)[0].trim();
 
-                        if (name.length > 0) {
-                            let side = (matches.length >= 2) ? idx : 0;
-                            players.push({ p: currentP, n: num, nm: name, b: isB, side: side });
+                    if (name.length > 0) {
+                        let side = 0;
+                        if (matches.length >= 2) {
+                            // スマホ版（横並び）
+                            side = idx;
+                        } else {
+                            // PC版（縦一列）
+                            if (!isB) {
+                                side = (starterCount < 11) ? 0 : 1;
+                                starterCount++;
+                            } else {
+                                side = (subCount < 9) ? 0 : 1; // 控えは9人ずつで区切り
+                                subCount++;
+                            }
                         }
-                    });
-                }
+                        players.push({ p: currentP, n: num, nm: name, b: isB, side: side });
+                    }
+                });
             });
             render();
+        }
+
+        function updateName(i, newName) {
+            players[i].nm = newName.trim();
         }
 
         function render() {
@@ -116,7 +132,9 @@
             return `<div class="row">
                 <span class="pos" onclick="rotatePos(${p.i})">${p.p}</span>
                 <span class="no">${p.n}</span>
-                <div class="name-container"><span class="name" contenteditable="true" oninput="autoScale()">${p.nm}</span></div>
+                <div class="name-container">
+                    <div class="name" contenteditable="true" onblur="updateName(${p.i}, this.innerText)" oninput="autoScale()">${p.nm}</div>
+                </div>
                 <span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span>
             </div>`;
         }
