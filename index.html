@@ -16,8 +16,7 @@
 
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 10px; position: relative; }
         .team-container { width: 45%; display: flex; justify-content: center; }
-        .team-name { font-size: 20px; font-weight: 800; color: #fff; outline: none; border-bottom: 1px dashed #555; }
-        .vs-text { font-size: 14px; font-weight: bold; color: #888; }
+        .team-name { font-size: 20px; font-weight: 800; color: #fff; outline: none; border-bottom: 1px dashed #555; text-align: center; width: 100%; }
         
         .main { display: flex; justify-content: space-between; position: relative; }
         .col { width: 48%; }
@@ -46,7 +45,7 @@
     <div id="capture-area">
         <div class="header">
             <div class="team-container"><div class="team-name" contenteditable="true" id="t1">HOME</div></div>
-            <div class="vs-text">VS</div>
+            <div style="color:#888; font-weight:bold;">VS</div>
             <div class="team-container"><div class="team-name" contenteditable="true" id="t2">AWAY</div></div>
         </div>
         <div class="main">
@@ -62,35 +61,39 @@
 
         function parse() {
             const raw = document.getElementById('it').value;
-            const lines = raw.split('\n');
+            // まず全角スペースをすべて半角スペースに置き換えてから1行ずつに分ける
+            const sanitizedRaw = raw.replace(/　/g, " ");
+            const lines = sanitizedRaw.split('\n');
+            
             players = [];
-            let currentP = "GK";
-            let isB = false;
+            let currentP = "GK", isB = false;
 
             lines.forEach(line => {
                 const t = line.trim();
                 if (!t) return;
 
-                // ポジション・控え判定
-                if (t.includes("GK") || t.includes("ゴールキーパー")) currentP = "GK";
-                else if (t.includes("DF") || t.includes("ディフェンダー")) currentP = "DF";
-                else if (t.includes("MF") || t.includes("ミッドフィルダー")) currentP = "MF";
-                else if (t.includes("FW") || t.includes("フォワード")) currentP = "FW";
-                if (t.includes("控え") || t.includes("SUB")) isB = true;
-                if (t.includes("先発") || t.includes("スタメン")) isB = false;
+                if (t.match(/GK|ゴールキーパー/i)) currentP = "GK";
+                else if (t.match(/DF|ディフェンダー/i)) currentP = "DF";
+                else if (t.match(/MF|ミッドフィルダー/i)) currentP = "MF";
+                else if (t.match(/FW|フォワード/i)) currentP = "FW";
+                if (t.match(/控え|SUB/i)) isB = true;
+                if (t.match(/先発|スタメン|STARTER/i)) isB = false;
 
-                // 解析：1行の中にある「数字」と「それに続く名前」をすべて抽出
-                const regex = /(\d+)[\s　]+([^\s　\d]+)/g;
+                // 数字から始まり、次の数字が出てくる手前までを「名前」として丸ごと拾う
+                // この時点でスペースは半角に統一されている
+                const regex = /(\d+)\s+([^0-9\n\r]+)/g;
                 let matches = [...t.matchAll(regex)];
 
                 if (matches.length > 0) {
                     matches.forEach((m, idx) => {
                         let num = m[1];
-                        let name = m[2].replace(/[()（）]/g, "").trim();
-                        // 1行に複数人いれば、順番に左右に振り分ける（スマホ横並び対応）
-                        // PC版（1人1行）なら自動的にside:0(左)に固まる
-                        let side = (matches.length >= 2) ? idx : 0;
-                        players.push({ p: currentP, n: num, nm: name, b: isB, side: side });
+                        let name = m[2].trim();
+                        name = name.split(/交代|▲|▼/)[0].trim();
+
+                        if (name.length > 0) {
+                            let side = (matches.length >= 2) ? idx : 0;
+                            players.push({ p: currentP, n: num, nm: name, b: isB, side: side });
+                        }
                     });
                 }
             });
@@ -100,8 +103,9 @@
         function render() {
             const draw = (s) => {
                 const list = players.map((p, i) => ({...p, i})).filter(p => p.side === s);
-                return `<div class="label">STARTERS</div>` + list.filter(p => !p.b).map(p => genRow(p)).join('') +
-                       `<div class="label">SUBSTITUTES</div>` + list.filter(p => p.b).map(p => genRow(p)).join('');
+                let h = `<div class="label">STARTERS</div>` + list.filter(x => !x.b).map(x => genRow(x)).join('');
+                h += `<div class="label">SUBSTITUTES</div>` + list.filter(x => x.b).map(x => genRow(x)).join('');
+                return h;
             };
             document.getElementById('col1').innerHTML = draw(0);
             document.getElementById('col2').innerHTML = draw(1);
@@ -112,7 +116,7 @@
             return `<div class="row">
                 <span class="pos" onclick="rotatePos(${p.i})">${p.p}</span>
                 <span class="no">${p.n}</span>
-                <div class="name-container"><span class="name" contenteditable="true">${p.nm}</span></div>
+                <div class="name-container"><span class="name" contenteditable="true" oninput="autoScale()">${p.nm}</span></div>
                 <span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span>
             </div>`;
         }
@@ -132,7 +136,7 @@
                 el.style.transform = 'scaleX(1)';
                 const pw = el.parentElement.clientWidth;
                 const ew = el.scrollWidth;
-                if (ew > pw && pw > 0) el.style.transform = `scaleX(${(pw - 1) / ew})`;
+                if (ew > pw && pw > 0) el.style.transform = `scaleX(${(pw - 2) / ew})`;
             });
         }
 
@@ -143,7 +147,7 @@
             setTimeout(() => {
                 html2canvas(area, { scale: 2, backgroundColor: "#000" }).then(c => {
                     const res = document.getElementById('res');
-                    res.innerHTML = '<p style="text-align:center;font-size:12px;color:#888;">画像保存は右クリックまたは長押し</p>';
+                    res.innerHTML = '<p style="text-align:center;font-size:12px;color:#888;">右クリック・長押しで保存</p>';
                     res.appendChild(new Image()).src = c.toDataURL();
                     area.classList.remove('taking-photo');
                 });
