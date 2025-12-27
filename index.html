@@ -1,0 +1,159 @@
+(件名なし)
+Y S<ymy.s9925@gmail.com>
+​自分​
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+body { background: #111; color: white; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif; padding: 10px; }
+textarea { width: 95%; height: 60px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; margin-bottom: 5px; }
+.controls { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; align-items: center; }
+button { background: #007AFF; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+#capture-area { width: 480px; background: #000; padding: 25px; margin: 0 auto; display: flex; flex-direction: column; }
+.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 10px; }
+.team-container { width: 45%; overflow: hidden; display: flex; justify-content: center; }
+.team-name { font-size: 20px; font-weight: 800; text-align: center; color: #fff; outline: none; white-space: nowrap; display: inline-block; transform-origin: center center; }
+.vs-text { font-size: 14px; color: #fff; font-weight: bold; margin: 0 5px; }
+.main { display: flex; justify-content: space-between; }
+.col { width: 48%; display: flex; flex-direction: column; }
+.label { font-size: 11px; font-weight: 800; margin: 15px 0 8px 0; border-left: 4px solid #ffffff; padding-left: 8px; letter-spacing: 0.5px; color: #ffffff; }
+.row { display: flex; align-items: center; height: 34px; border-bottom: 1px solid #1a1a1a; position: relative; overflow: hidden; }
+.pos { width: 32px; color: #777; font-size: 11px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+.no { width: 28px; font-weight: 800; margin-right: 10px; text-align: right; font-size: 14px; color: #aaa; flex-shrink: 0; }
+.name-container { flex: 1; display: flex; align-items: center; overflow: hidden; }
+.name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; display: inline-block; transform-origin: left center; outline: none; border-bottom: 1px dashed transparent; width: 100%; }
+.name:focus { border-bottom-color: #007AFF; background: #222; }
+.move-btn { font-size: 11px; padding: 3px 8px; cursor: pointer; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; margin-left: 5px; flex-shrink: 0; }
+.taking-photo .move-btn { display: none; }
+#res img { max-width: 100%; margin-top: 20px; border: 2px solid #444; }
+</style>
+</head>
+<body>
+<textarea id="it" placeholder="データを貼り付け"></textarea>
+<div class="controls">
+<button onclick="parse()">1. 読み込む</button>
+<button onclick="takePhoto()" style="background:#34c759;">2. 画像を生成する</button>
+</div>
+<div id="capture-area">
+<div class="header">
+<div class="team-container"><div class="team-name" contenteditable="true" id="t1" oninput="adjustTeamNames()">HOME</div></div>
+<div class="vs-text">VS</div>
+<div class="team-container"><div class="team-name" contenteditable="true" id="t2" oninput="adjustTeamNames()">AWAY</div></div>
+</div>
+<div class="main">
+<div class="col" id="col1"></div>
+<div class="col" id="col2"></div>
+</div>
+</div>
+<div id="res"></div>
+
+<script>
+let players = [];
+const posCycle = ["GK", "DF", "MF", "FW"];
+
+function parse() {
+const raw = document.getElementById('it').value;
+const lines = raw.split('\n');
+players = [];
+let hP = "GK", aP = "GK", isB = false;
+
+lines.forEach(line => {
+if (line.includes("控えメンバー")) isB = true;
+if (line.includes("スターティング")) isB = false;
+
+const pMatches = [...line.matchAll(/GK|DF|MF|FW/g)];
+pMatches.forEach(m => {
+if (m.index < line.length / 2) hP = m[0]; else aP = m[0];
+});
+
+// ★ここを修正：数字以外の全ての文字（特殊漢字や記号）を名前として認識するように変更
+const matches = [...line.matchAll(/(\d+)\s+([^\d\n\r]+)/g)];
+
+matches.forEach((m, idx) => {
+let name = m[2].trim().split(/\s{2,}/)[0].replace(/　/g, " ");
+let side = (matches.length >= 2 && idx === 1) || (matches.length === 1 && m.index > 15) ? 1 : 0;
+let currentPos = (side === 0) ? hP : aP;
+players.push({ p: currentPos, n: m[1], nm: name, b: isB, side: side });
+});
+});
+render();
+}
+
+function updateNameData(idx, newName) {
+players[idx].nm = newName.replace(/\n/g, ""); // 改行が入らないように
+adjustLongNames();
+}
+
+function render() {
+const draw = (side) => {
+const list = players.map((p, i) => ({...p, originalIndex: i})).filter(p => p.side === side);
+const s = list.filter(p => !p.b);
+const b = list.filter(p => p.b);
+let h = `<div class="label">スターティングメンバー</div>` + s.map(p => genRow(p, p.originalIndex)).join('');
+h += `<div class="label">ベンチメンバー</div>` + b.map(p => genRow(p, p.originalIndex)).join('');
+return h;
+};
+document.getElementById('col1').innerHTML = draw(0);
+document.getElementById('col2').innerHTML = draw(1);
+setTimeout(() => { adjustLongNames(); adjustTeamNames(); }, 50);
+}
+
+function genRow(p, globalIdx) {
+return `<div class="row">
+<span class="pos" onclick="rotatePos(${globalIdx})">${p.p}</span>
+<span class="no">${p.n}</span>
+<div class="name-container">
+<span class="name" contenteditable="true" oninput="updateNameData(${globalIdx}, this.innerText)">${p.nm}</span>
+</div>
+<span class="move-btn" onclick="move(${globalIdx})">${p.side === 0 ? '→' : '←'}</span>
+</div>`;
+}
+
+function rotatePos(idx) {
+let currentIdx = posCycle.indexOf(players[idx].p);
+players[idx].p = posCycle[(currentIdx + 1) % posCycle.length];
+render();
+}
+
+function move(idx) {
+players[idx].side = (players[idx].side === 0) ? 1 : 0;
+render();
+}
+
+function adjustTeamNames() {
+document.querySelectorAll('.team-name').forEach(el => {
+const container = el.parentElement;
+el.style.transform = 'scale(1)';
+const ratio = container.offsetWidth / (el.offsetWidth + 4);
+if (ratio < 1) el.style.transform = `scale(${ratio})`;
+});
+}
+
+function adjustLongNames() {
+document.querySelectorAll('.name').forEach(el => {
+const container = el.parentElement;
+el.style.transform = 'scaleX(1)';
+const ratio = container.offsetWidth / (el.offsetWidth + 2);
+if (ratio < 1) el.style.transform = `scaleX(${ratio})`;
+});
+}
+
+function takePhoto() {
+const area = document.getElementById('capture-area');
+area.classList.add('taking-photo');
+document.activeElement.blur();
+setTimeout(() => {
+html2canvas(area, {scale:2, backgroundColor:"#000"}).then(c => {
+const res = document.getElementById('res');
+res.innerHTML = '<p style="color:#888; font-size:12px; margin-bottom:10px;">画像長押しで保存</p>';
+res.appendChild(new Image()).src = c.toDataURL();
+area.classList.remove('taking-photo');
+});
+}, 100);
+}
+</script>
+</body>
+</html>
