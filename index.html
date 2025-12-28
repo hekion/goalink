@@ -3,173 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Goalink Editor - HEKION</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Goalink Editor Hub</title>
     <style>
-        body { background: #111; color: white; font-family: sans-serif; padding: 10px; }
-        textarea { width: 95%; height: 100px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
-        .controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        button { background: #007AFF; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #111; overflow: hidden; font-family: sans-serif; }
         
-        #capture-area { width: 480px; background: #000; padding: 25px; margin: 0 auto; box-sizing: border-box; position: relative; }
-        #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.4; pointer-events: none; }
+        /* 上部の切り替えメニュー */
+        .hub-nav {
+            display: flex;
+            background: #222;
+            height: 50px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-bottom: 2px solid #007AFF;
+        }
 
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 12px; margin-bottom: 10px; position: relative; }
-        .team-container { width: 45%; display: flex; justify-content: center; }
-        .team-name { font-size: 20px; font-weight: 800; color: #fff; outline: none; border-bottom: 1px dashed #555; text-align: center; width: 100%; }
-        
-        .main { display: flex; justify-content: space-between; position: relative; }
-        .col { width: 48%; }
-        .label { font-size: 11px; font-weight: 800; margin: 15px 0 8px 0; border-left: 4px solid #34c759; padding-left: 8px; color: #fff; }
-        
-        .row { display: flex; align-items: center; height: 34px; border-bottom: 1px solid #1a1a1a; }
-        .pos { width: 32px; color: #777; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .no { width: 28px; font-weight: 800; margin-right: 8px; text-align: right; font-size: 14px; color: #aaa; }
-        
-        .name-container { flex: 1; overflow: hidden; display: flex; align-items: center; }
-        .name { white-space: nowrap; font-size: 16px; font-weight: 800; color: #eee; outline: none; transform-origin: left center; width: 100%; }
-        
-        .move-btn { font-size: 10px; padding: 2px 6px; cursor: pointer; background: #333; border: 1px solid #555; border-radius: 4px; margin-left: 5px; color: #fff; }
-        .taking-photo .move-btn { display: none; }
-        #res img { max-width: 100%; display: block; margin: 20px auto; border: 2px solid #444; }
+        .hub-btn {
+            background: #333;
+            color: #ccc;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .hub-btn.active {
+            background: #007AFF;
+            color: white;
+        }
+
+        /* サイトを表示するエリア */
+        .content-frame {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+        }
     </style>
 </head>
 <body>
-    <div style="text-align: center; margin: 10px 0; font-weight: bold;">Goalink Editor by HEKION</div>
-    <textarea id="it" placeholder="選手データを貼り付け"></textarea>
-    <div class="controls">
-        <button onclick="parse()">1. 読み込む</button>
-        <button onclick="takePhoto()" style="background:#34c759;">2. 画像生成</button>
+
+    <div class="hub-nav">
+        <button class="hub-btn active" onclick="loadSite('https://hekion.github.io/test/', this)">スタメン</button>
+        <button class="hub-btn" onclick="loadSite('https://hekion.github.io/test2/', this)">対戦カード</button>
+        <button class="hub-btn" onclick="loadSite('https://hekion.github.io/test3/', this)">順位表</button>
+        <button class="hub-btn" onclick="loadSite('https://hekion.github.io/test4/', this)">スタッツ</button>
     </div>
-    
-    <div id="capture-area">
-        <div class="header">
-            <div class="team-container"><div class="team-name" contenteditable="true" id="t1">HOME</div></div>
-            <div style="color:#888; font-weight:bold;">VS</div>
-            <div class="team-container"><div class="team-name" contenteditable="true" id="t2">AWAY</div></div>
-        </div>
-        <div class="main">
-            <div id="col1" class="col"></div>
-            <div id="col2" class="col"></div>
-        </div>
-    </div>
-    <div id="res"></div>
+
+    <iframe id="main-frame" src="https://hekion.github.io/test/" class="content-frame"></iframe>
 
     <script>
-        let players = [];
-        const posCycle = ["GK", "DF", "MF", "FW"];
-
-        function parse() {
-            const raw = document.getElementById('it').value.replace(/　/g, " ");
-            const lines = raw.split('\n');
+        function loadSite(url, btn) {
+            // フレームのURLを書き換え
+            document.getElementById('main-frame').src = url;
             
-            players = [];
-            let currentP = "GK", isB = false;
-            let starterCount = 0;
-            let subCount = 0;
-
-            lines.forEach(line => {
-                const t = line.trim();
-                if (!t) return;
-
-                if (t.match(/GK|ゴールキーパー/i)) currentP = "GK";
-                else if (t.match(/DF|ディフェンダー/i)) currentP = "DF";
-                else if (t.match(/MF|ミッドフィルダー/i)) currentP = "MF";
-                else if (t.match(/FW|フォワード/i)) currentP = "FW";
-                if (t.match(/控え|SUB/i)) isB = true;
-                if (t.match(/先発|スタメン|STARTER/i)) isB = false;
-
-                const regex = /(\d+)\s+([^0-9\n\r]+)/g;
-                let matches = [...t.matchAll(regex)];
-
-                matches.forEach((m, idx) => {
-                    let num = m[1];
-                    let name = m[2].trim();
-                    
-                    // 「名前 GK」などの余計な情報をカット
-                    name = name.replace(/\s(GK|DF|MF|FW)$/i, "");
-                    name = name.split(/交代|▲|▼|[\(\[（]/)[0].trim();
-
-                    if (name.length > 0) {
-                        let side = 0;
-                        if (matches.length >= 2) {
-                            // スマホ版（横並び）
-                            side = idx;
-                        } else {
-                            // PC版（縦一列）
-                            if (!isB) {
-                                side = (starterCount < 11) ? 0 : 1;
-                                starterCount++;
-                            } else {
-                                side = (subCount < 9) ? 0 : 1; // 控えは9人ずつで区切り
-                                subCount++;
-                            }
-                        }
-                        players.push({ p: currentP, n: num, nm: name, b: isB, side: side });
-                    }
-                });
-            });
-            render();
-        }
-
-        function updateName(i, newName) {
-            players[i].nm = newName.trim();
-        }
-
-        function render() {
-            const draw = (s) => {
-                const list = players.map((p, i) => ({...p, i})).filter(p => p.side === s);
-                let h = `<div class="label">STARTERS</div>` + list.filter(x => !x.b).map(x => genRow(x)).join('');
-                h += `<div class="label">SUBSTITUTES</div>` + list.filter(x => x.b).map(x => genRow(x)).join('');
-                return h;
-            };
-            document.getElementById('col1').innerHTML = draw(0);
-            document.getElementById('col2').innerHTML = draw(1);
-            setTimeout(autoScale, 100);
-        }
-
-        function genRow(p) {
-            return `<div class="row">
-                <span class="pos" onclick="rotatePos(${p.i})">${p.p}</span>
-                <span class="no">${p.n}</span>
-                <div class="name-container">
-                    <div class="name" contenteditable="true" onblur="updateName(${p.i}, this.innerText)" oninput="autoScale()">${p.nm}</div>
-                </div>
-                <span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span>
-            </div>`;
-        }
-
-        function rotatePos(i) {
-            players[i].p = posCycle[(posCycle.indexOf(players[i].p) + 1) % posCycle.length];
-            render();
-        }
-
-        function move(i) {
-            players[i].side = players[i].side === 0 ? 1 : 0;
-            render();
-        }
-
-        function autoScale() {
-            document.querySelectorAll('.name').forEach(el => {
-                el.style.transform = 'scaleX(1)';
-                const pw = el.parentElement.clientWidth;
-                const ew = el.scrollWidth;
-                if (ew > pw && pw > 0) el.style.transform = `scaleX(${(pw - 2) / ew})`;
-            });
-        }
-
-        function takePhoto() {
-            const area = document.getElementById('capture-area');
-            area.classList.add('taking-photo');
-            autoScale();
-            setTimeout(() => {
-                html2canvas(area, { scale: 2, backgroundColor: "#000" }).then(c => {
-                    const res = document.getElementById('res');
-                    res.innerHTML = '<p style="text-align:center;font-size:12px;color:#888;">右クリック・長押しで保存</p>';
-                    res.appendChild(new Image()).src = c.toDataURL();
-                    area.classList.remove('taking-photo');
-                });
-            }, 200);
+            // ボタンの見た目を更新
+            document.querySelectorAll('.hub-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
     </script>
 </body>
