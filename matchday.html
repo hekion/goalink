@@ -29,9 +29,12 @@
 
         /* --- ツール本体スタイル --- */
         body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
-        .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; }
-        textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 4px; padding: 10px; font-size: 14px; box-sizing: border-box; }
-        button { background: #007AFF; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-parse { background: #007AFF; }
+        .btn-photo { background: #34c759; }
         
         #capture-area { width: 432px; height: 540px; background: #000; overflow: hidden; position: relative; display: flex; flex-direction: column; padding: 15px 10px 25px 10px; box-sizing: border-box; flex-shrink: 0; }
         #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
@@ -46,16 +49,18 @@
         .team-side { flex: 1; display: flex; align-items: center; overflow: hidden; white-space: nowrap; }
         .team-h { justify-content: flex-end; padding-right: 12px; }
         .team-a { justify-content: flex-start; padding-left: 12px; }
-        .name-inner { font-size: 14px; font-weight: 900; transform-origin: center; flex-shrink: 0; }
+        .name-inner { font-size: 14px; font-weight: 900; transform-origin: center; flex-shrink: 0; outline: none; }
         
         .center-box { width: 110px; height: 35px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; flex-shrink: 0; }
         .c-date-time { font-size: 8px; font-weight: 800; color: #fff; text-align: center; line-height: 1.2; }
-        .c-venue { font-size: 8.5px; font-weight: 600; color: #fff; opacity: 0.95; margin-top: 2px; max-width: 95%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
-        .score-display { font-size: 19px; font-weight: 900; display: none; color: #fff; }
+        .c-venue { font-size: 8.5px; font-weight: 600; color: #fff; opacity: 0.95; margin-top: 2px; max-width: 95%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; outline: none; }
+        .score-display { font-size: 19px; font-weight: 900; display: none; color: #fff; outline: none; }
         
         .mode-results .c-date-time, .mode-results .c-venue { display: none; }
         .mode-results .score-display { display: block; }
         #res img { margin: 20px auto; width: 432px; display: block; border: none; }
+        
+        select { background: #333; color: white; border-radius: 8px; border: 1px solid #444; padding: 8px; font-size: 13px; }
     </style>
 </head>
 <body class="mode-info">
@@ -76,18 +81,20 @@
 
     <div class="controls">
         <textarea id="it" placeholder="日程データを貼り付け"></textarea>
-        <div style="display:flex; gap:5px;">
-            <select id="mode-select" onchange="updateMode()" style="flex:1; background:#333; color:white; border-radius:8px; border:1px solid #444; padding:5px;">
+        <div style="display:flex; gap:10px;">
+            <select id="mode-select" onchange="updateMode()" style="flex:1;">
                 <option value="mode-info">告知モード</option>
                 <option value="mode-results">結果モード</option>
             </select>
-            <button onclick="parse()" style="flex:1;">1. 解析・反映</button>
+            <div style="flex:1; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:11px; color:#aaa; white-space:nowrap;">センター色:</span>
+                <input type="color" id="center-color" value="#7a1200" oninput="syncColor()" style="width:100%; height:32px; border:none; background:transparent; cursor:pointer;">
+            </div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:12px; color:#aaa;">センター色:</span>
-            <input type="color" id="center-color" value="#7a1200" oninput="syncColor()" style="flex:1; height:35px; border:none; background:transparent; cursor:pointer;">
+        <div class="btn-group">
+            <button class="btn-parse" onclick="parse()">1. 読み込む</button>
+            <button class="btn-photo" onclick="takePhoto()">2. 画像出力</button>
         </div>
-        <button onclick="takePhoto()" style="background:#34c759;">2. 画像出力</button>
     </div>
 
     <div id="capture-area" class="mode-info">
@@ -124,6 +131,15 @@
 
         function toHalfWidth(str) { return str.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/\s+/g, '').trim(); }
         
+        function isTeam(name) {
+            if (!name) return false;
+            const n = toHalfWidth(name);
+            for (let key in teamDict) {
+                if (n.includes(toHalfWidth(key)) || toHalfWidth(teamDict[key]).includes(n)) return true;
+            }
+            return false;
+        }
+
         function getConvertedName(name) {
             if (!name) return "";
             const n = toHalfWidth(name);
@@ -150,17 +166,22 @@
                     let line1 = lines[i+1] || "";
                     let line2 = lines[i+2] || "";
                     
+                    // VSが含まれる行をスキップして、その次の有効な行を探すロジック
+                    if (toHalfWidth(line1).toUpperCase() === "VS") {
+                        line1 = lines[i+2] || "";
+                        line2 = lines[i+3] || "";
+                    }
+
                     let a = "";
                     let v = "";
 
-                    // 【改善ロジック】アウェーチームとスタジアムの入れ替え判定
-                    // 辞書に載っているチーム名がline2にある場合、またはline1が明らかに短い（略称スタジアム名）場合に入れ替え
-                    if (getConvertedName(line2) !== line2 || line1.length <= 4) {
-                        a = line2; // 下の行がチーム
-                        v = line1; // 上の行が会場
+                    // line1がチーム名辞書に含まれず、line2がチーム名である場合、またはline1が明らかに会場名っぽい場合
+                    if (!isTeam(line1) && isTeam(line2)) {
+                        a = line2;
+                        v = line1;
                     } else {
-                        a = line1; // 上の行がチーム
-                        v = line2; // 下の行が会場
+                        a = line1;
+                        v = line2;
                     }
 
                     if(h && a && !h.includes("EAST") && !h.includes("WEST")) {
@@ -222,7 +243,13 @@
         
         function takePhoto() {
             const area = document.getElementById('capture-area');
-            html2canvas(area, { scale: 4, backgroundColor: "#000", width: 432, height: 540 }).then(c => {
+            html2canvas(area, { 
+                scale: 4, 
+                backgroundColor: "#000", 
+                width: 432, 
+                height: 540,
+                useCORS: true
+            }).then(c => {
                 const res = document.getElementById('res');
                 res.innerHTML = '';
                 const img = new Image();
