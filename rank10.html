@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RANK 10 | Goalink Analysis tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- ①② 共通デザイン・ヘッダー・フッター --- */
+        :root { --main-cyan: #4bb8e0; }
+        body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
+        header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
+        .header-inner { width: 100%; max-width: 600px; text-align: center; }
+        .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; }
+        nav { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+        .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
+        .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
+        
+        /* --- ① 操作パネル (統一) --- */
+        .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 540px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-parse { background: #007AFF; }
+        .btn-photo { background: #34c759; }
+
+        /* --- ③ キャプチャエリア (1:1 正方形 540x540) --- */
+        .preview-container { width: 100%; max-width: 540px; display: flex; justify-content: center; }
+        #capture-area { 
+            width: 540px; height: 540px; background: #000; overflow: hidden; 
+            display: flex; flex-direction: column; justify-content: center; padding: 20px; box-sizing: border-box;
+            flex-shrink: 0; position: relative;
+        }
+        #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
+
+        /* リーグ名なしのためタイトル削除または最小化 */
+        .main-league-title { display: none; }
+
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
+        th, td { text-align: center; white-space: nowrap; line-height: 1.6; font-weight: 500; }
+        th { font-size: 12px; color: #777; padding-bottom: 12px; border-bottom: 2px solid #444; }
+        td { font-size: 16px; padding: 10px 0; border-bottom: 1px solid #222; color: #eee; }
+        
+        .col-t-val { font-weight: 900 !important; font-size: 18px; color: #fff; text-align: left; padding-left: 10px; }
+        .col-pts-val { background: rgba(255,255,255,0.08); color: #fff; font-weight: 900; }
+        
+        /* 540pxに合わせた列幅調整 */
+        .col-r { width: 35px; } .col-t { width: 190px; } .col-m { width: 35px; } 
+        .col-pts { width: 45px; } .col-s { width: 32px; color: #777; }
+        .col-g { width: 35px; color: #777; } .col-gd { width: 45px; }
+        .team-name { overflow: hidden; text-overflow: ellipsis; display: block; }
+        
+        #res img { margin-top: 20px; width: 100%; max-width: 540px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #333; }
+
+        /* --- ② フッター --- */
+        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
+            <nav>
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="lineup.html" class="nav-link">LINEUP</a>
+                <a href="matchday.html" class="nav-link">MATCH</a>
+                <a href="rank20.html" class="nav-link">RANK 20</a>
+                <a href="rank10.html" class="nav-link active">RANK 10</a>
+                <a href="stats.html" class="nav-link">STATS</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="controls">
+        <textarea id="it" placeholder="順位表をコピペ"></textarea>
+        <div class="btn-group">
+            <button class="btn-parse" onclick="parseStanding()">1. 読み込む</button>
+            <button class="btn-photo" onclick="takePhoto()">2. 画像出力</button>
+        </div>
+    </div>
+
+    <div class="preview-container">
+        <div id="capture-area">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-r">順</th><th class="col-t">TEAM</th><th class="col-m">試</th><th class="col-pts">点</th>
+                        <th class="col-s">勝</th><th class="col-s">分</th><th class="col-s">負</th>
+                        <th class="col-g">得</th><th class="col-g">失</th><th class="col-gd">差</th>
+                    </tr>
+                </thead>
+                <tbody id="standing-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="res"></div>
+
+    <footer>
+        <div class="footer-copy">&copy; Goalink</div>
+        <div class="footer-powered">powered by HEKION</div>
+    </footer>
+
+    <script>
+        const teamDict = { "鹿島": "鹿島アントラーズ", "浦和": "浦和レッズ", "横浜FM": "横浜F・マリノス", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "広島": "サンフレッチェ広島", "名古屋": "名古屋グランパス", "福岡": "アビスパ福岡", "鳥栖": "サガン鳥栖", "札幌": "北海道コンサドーレ札幌", "新潟": "アルビレックス新潟", "磐田": "ジュビロ磐田", "東京V": "東京ヴェルディ", "FC東京": "FC東京", "湘南": "湘南ベルマーレ", "京都": "京都サンガF.C.", "柏": "柏レイソル" };
+
+        function getConvertedName(name) {
+            if(!name) return "";
+            let n = name.trim();
+            const half = Math.floor(n.length / 2);
+            if (n.length >= 4 && n.substring(0, half) === n.substring(half)) n = n.substring(0, half);
+            for (let key in teamDict) { if (n.includes(key)) return teamDict[key]; }
+            return n;
+        }
+
+        function parseStanding() {
+            const raw = document.getElementById('it').value;
+            const allTokens = raw.split(/\s+/).filter(t => t !== "");
+            let data = [];
+            for (let i = 0; i < allTokens.length; i++) {
+                if (allTokens[i].match(/^\d{1,2}$/) && allTokens[i+1] && !allTokens[i+1].match(/^\d+$/)) {
+                    let stats = [];
+                    for(let j=i+2; j<i+15; j++) {
+                        if(allTokens[j] && allTokens[j].match(/^[+-]?\d+$/)) stats.push(allTokens[j]);
+                        if(stats.length >= 8) break;
+                    }
+                    if(stats.length >= 8) {
+                        data.push({
+                            rank: allTokens[i], team: getConvertedName(allTokens[i+1]),
+                            m: stats[1], pts: stats[0],
+                            w: stats[2], d: stats[3], l: stats[4], gf: stats[5], ga: stats[6], gd: stats[7]
+                        });
+                        i += 9;
+                    }
+                }
+            }
+            renderStanding(data);
+        }
+
+        function renderStanding(data) {
+            const body = document.getElementById('standing-body');
+            let html = "";
+            data.slice(0, 10).forEach((d, index) => {
+                html += `<tr>
+                    <td contenteditable="true">${d.rank}</td>
+                    <td class="col-t-val"><span class="team-name" contenteditable="true">${d.team}</span></td>
+                    <td contenteditable="true">${d.m}</td>
+                    <td class="col-pts-val" contenteditable="true">${d.pts}</td>
+                    <td contenteditable="true">${d.w}</td>
+                    <td contenteditable="true">${d.d}</td>
+                    <td contenteditable="true">${d.l}</td>
+                    <td contenteditable="true">${d.gf}</td>
+                    <td contenteditable="true">${d.ga}</td>
+                    <td contenteditable="true">${parseInt(d.gd)>0?'+'+d.gd:d.gd}</td>
+                </tr>`;
+            });
+            body.innerHTML = html;
+        }
+
+        function takePhoto() {
+            html2canvas(document.getElementById('capture-area'), { 
+                scale: 2, 
+                backgroundColor: "#000",
+                width: 540,
+                height: 540
+            }).then(c => {
+                const res = document.getElementById('res');
+                res.innerHTML = '';
+                const img = new Image();
+                img.src = c.toDataURL();
+                res.appendChild(img);
+            });
+        }
+    </script>
+</body>
+</html>
