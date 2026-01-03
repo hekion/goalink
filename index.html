@@ -37,22 +37,30 @@
         main { flex: 1; padding: 20px 10px; max-width: 600px; margin: 0 auto; width: 100%; }
         
         .tool-card {
-            display: flex; align-items: center;
-            background: var(--card-bg); border-radius: 12px; margin-bottom: 12px;
+            display: flex; flex-direction: column; /* 縦並び構造に変更 */
+            background: var(--card-bg); border-radius: 12px; margin-bottom: 20px;
             text-decoration: none; border: 1px solid rgba(255,255,255,0.05);
             overflow: hidden; transition: 0.3s;
         }
-        .tool-card:hover { border-color: var(--main-cyan); transform: scale(1.01); }
+        .tool-card:hover { border-color: var(--main-cyan); transform: translateY(-2px); }
         
-        .card-img { width: 40%; aspect-ratio: 4 / 3; object-fit: cover; background: #222; }
-        .card-body { width: 60%; padding: 15px; }
-        .card-title { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; display: block; }
-        .card-desc { font-size: 10px; color: #888; line-height: 1.4; }
+        /* 画像比率を16:9で固定 */
+        .card-img-wrapper {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #222;
+        }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-body { padding: 18px 15px; }
+        .card-title { font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; display: block; letter-spacing: 0.05em; }
+        .card-desc { font-size: 11px; color: #aaa; line-height: 1.6; }
 
         /* フッター */
-        footer { padding: 20px 10px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; margin-top: 20px; }
-        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.1em; color: #666; margin-bottom: 4px; }
-        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.05em; }
+        footer { padding: 25px 10px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; margin-top: 20px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -73,7 +81,7 @@
 
     <main>
         <a href="lineup.html" class="tool-card">
-            <img src="menu-lineup.png" alt="" class="card-img">
+            <div class="card-img-wrapper"><img src="menu-lineup.png" alt="" class="card-img"></div>
             <div class="card-body">
                 <span class="card-title text-[#4bb8e0]">LINEUP / メンバー解析</span>
                 <p class="card-desc">予想スタメンや確定メンバーを解析し、ピッチ図を含むグラフィックを生成します。</p>
@@ -81,7 +89,7 @@
         </a>
 
         <a href="matchday.html" class="tool-card">
-            <img src="menu-matchday.png" alt="" class="card-img">
+            <div class="card-img-wrapper"><img src="menu-matchday.png" alt="" class="card-img"></div>
             <div class="card-body">
                 <span class="card-title text-[#4bb8e0]">MATCH / 対戦カード解析</span>
                 <p class="card-desc">日程データを解析し、キックオフ時刻や会場を含めた対戦カード画像を生成します。</p>
@@ -89,7 +97,7 @@
         </a>
 
         <a href="rank20.html" class="tool-card">
-            <img src="menu-rank20.png" alt="" class="card-img">
+            <div class="card-img-wrapper"><img src="menu-rank20.png" alt="" class="card-img"></div>
             <div class="card-body">
                 <span class="card-title text-[#4bb8e0]">RANK 20 / 順位表解析</span>
                 <p class="card-desc">20チーム形式、または10チーム×2組の順位データを解析し、一覧画像を生成します。</p>
@@ -97,7 +105,7 @@
         </a>
 
         <a href="rank10.html" class="tool-card">
-            <img src="menu-rank10.png" alt="" class="card-img">
+            <div class="card-img-wrapper"><img src="menu-rank10.png" alt="" class="card-img"></div>
             <div class="card-body">
                 <span class="card-title text-[#4bb8e0]">RANK 10 / 順位表解析</span>
                 <p class="card-desc">10チーム形式の順位表に特化した解析を行い、コンパクトな画像を生成します。</p>
@@ -105,10 +113,10 @@
         </a>
 
         <a href="stats.html" class="tool-card">
-            <img src="menu-stats.png" alt="" class="card-img">
+            <div class="card-img-wrapper"><img src="menu-stats.png" alt="" class="card-img"></div>
             <div class="card-body">
-                <span class="card-title text-[#4bb8e0]">STATS / スタッツ解析</span>
-                <p class="card-desc">走行距離や個人スタッツ、チームスタッツを解析して視覚化します。</p>
+                <span class="card-title text-[#4bb8e0]">STATS / 試合結果解析</span>
+                <p class="card-desc">スコア・得点者・交代選手・警告退場に加え、シュート数などのチームスタッツを網羅したリザルト画像を生成します。</p>
             </div>
         </a>
     </main>
