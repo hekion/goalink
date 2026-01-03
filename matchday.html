@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 共通ヘッダー・フッター (完全同期) --- */
+        /* --- 共通ヘッダー・フッター --- */
         :root { --main-cyan: #4bb8e0; }
         header { 
             background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -27,7 +27,7 @@
         .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
         .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
 
-        /* --- ツール本体スタイル --- */
+        /* --- 本体スタイル --- */
         body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
         .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
         textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; }
@@ -44,12 +44,14 @@
         .round-info { font-size: 12px; font-weight: 700; color: #ffffff; opacity: 0.9; }
         
         .matches-list { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 1; }
-        .match-row { display: flex; align-items: center; justify-content: center; height: 39px; width: 100%; }
+        .match-row { display: flex; align-items: center; justify-content: center; height: 39px; width: 100%; position: relative; }
         
-        .team-side { flex: 1; display: flex; align-items: center; overflow: hidden; white-space: nowrap; }
-        .team-h { justify-content: flex-end; padding-right: 12px; }
-        .team-a { justify-content: flex-start; padding-left: 12px; }
-        .name-inner { font-size: 14px; font-weight: 900; transform-origin: center; flex-shrink: 0; outline: none; }
+        .team-side { flex: 1; display: flex; align-items: center; overflow: hidden; width: 145px; } /* 幅を固定して判定を安定化 */
+        .team-h { justify-content: flex-end; padding-right: 10px; }
+        .team-a { justify-content: flex-start; padding-left: 10px; }
+        
+        /* チーム名コンテナ */
+        .name-inner { font-size: 14px; font-weight: 900; white-space: nowrap; flex-shrink: 0; display: inline-block; outline: none; }
         
         .center-box { width: 110px; height: 35px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; flex-shrink: 0; }
         .c-date-time { font-size: 8px; font-weight: 800; color: #fff; text-align: center; line-height: 1.2; }
@@ -59,7 +61,6 @@
         .mode-results .c-date-time, .mode-results .c-venue { display: none; }
         .mode-results .score-display { display: block; }
         #res img { margin: 20px auto; width: 432px; display: block; border: none; }
-        
         select { background: #333; color: white; border-radius: 8px; border: 1px solid #444; padding: 8px; font-size: 13px; }
     </style>
 </head>
@@ -115,12 +116,12 @@
     <script>
         let matchData = [];
         const teamDict = {
-            "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル",
+            "札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル",
             "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス",
             "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", 
             "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", 
             "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "栃木Ｃ": "栃木シティ",
-            "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "札幌": "北海道コンサドーレ札幌", 
+            "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", 
             "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", 
             "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", 
             "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", 
@@ -158,31 +159,19 @@
             for (let i = 0; i < lines.length; i++) {
                 const dateMatch = lines[i].match(/(\d{1,2}月\d{1,2}日\(.\))/);
                 if(dateMatch) { currentDate = dateMatch[0]; continue; }
-
                 const timeMatch = lines[i].match(/^(\d{1,2}:\d{2})$/);
                 if(timeMatch) {
                     const time = timeMatch[1];
                     let h = lines[i-1];
                     let line1 = lines[i+1] || "";
                     let line2 = lines[i+2] || "";
-                    
-                    // VSが含まれる行をスキップして、その次の有効な行を探すロジック
                     if (toHalfWidth(line1).toUpperCase() === "VS") {
                         line1 = lines[i+2] || "";
                         line2 = lines[i+3] || "";
                     }
-
-                    let a = "";
-                    let v = "";
-
-                    // line1がチーム名辞書に含まれず、line2がチーム名である場合、またはline1が明らかに会場名っぽい場合
-                    if (!isTeam(line1) && isTeam(line2)) {
-                        a = line2;
-                        v = line1;
-                    } else {
-                        a = line1;
-                        v = line2;
-                    }
+                    let a = "", v = "";
+                    if (!isTeam(line1) && isTeam(line2)) { a = line2; v = line1; } 
+                    else { a = line1; v = line2; }
 
                     if(h && a && !h.includes("EAST") && !h.includes("WEST")) {
                         tempMatchData.push({ 
@@ -221,15 +210,29 @@
                 const sides = row.querySelectorAll('.team-side');
                 const innerH = row.querySelector('.team-h .name-inner');
                 const innerA = row.querySelector('.team-a .name-inner');
-                const maxWidth = sides[0].clientWidth - 10;
                 
+                // 各サイドの最大幅 (センターボックスを除いた余裕)
+                const maxWidth = 145; 
+
                 [innerH, innerA].forEach(el => {
-                    el.style.transform = 'scaleX(1)';
-                    const ew = el.scrollWidth;
-                    if (ew > maxWidth && maxWidth > 0) {
-                        el.style.transform = `scaleX(${maxWidth / ew})`;
+                    // 1. まず初期状態に戻す
+                    el.style.fontSize = "14px";
+                    el.style.transform = "scaleX(1)";
+                    
+                    // 2. 文字サイズを段階的に下げる (14px -> 8px)
+                    let currentSize = 14;
+                    while (el.scrollWidth > maxWidth && currentSize > 8) {
+                        currentSize -= 0.5;
+                        el.style.fontSize = currentSize + "px";
+                    }
+                    
+                    // 3. まだ収まらない場合は横に圧縮する
+                    const finalWidth = el.scrollWidth;
+                    if (finalWidth > maxWidth) {
+                        el.style.transform = `scaleX(${(maxWidth - 2) / finalWidth})`;
                     }
                 });
+
                 innerH.style.transformOrigin = 'right center';
                 innerA.style.transformOrigin = 'left center';
             });
@@ -243,6 +246,7 @@
         
         function takePhoto() {
             const area = document.getElementById('capture-area');
+            autoScaleTeams(); // 出力前にもう一度計算
             html2canvas(area, { 
                 scale: 4, 
                 backgroundColor: "#000", 
