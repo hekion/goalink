@@ -8,21 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
         :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; --card-bg: #1a1a1a; }
-        * { box-sizing: border-box; } /* はみ出し防止の基本設定 */
-        body { background-color: var(--bg-black); color: #fff; font-family: 'Noto Sans JP', sans-serif; margin: 0; }
+        * { box-sizing: border-box; }
+        body { background-color: var(--bg-black); color: #fff; font-family: 'Noto Sans JP', sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         .font-oswald { font-family: 'Oswald', sans-serif; }
         
-        /* 共通ヘッダー：PC/スマホ両対応 */
+        /* ヘッダー */
         header { 
             background: rgba(0,0,0,0.9); 
             backdrop-filter: blur(10px); 
             border-bottom: 1px solid rgba(255,255,255,0.1);
             position: sticky; top: 0; z-index: 1000;
         }
-        .header-inner { max-width: 600px; margin: 0 auto; padding: 15px 10px; }
-        .site-logo { height: 32px; width: auto; margin-bottom: 15px; }
+        .header-inner { max-width: 600px; margin: 0 auto; padding: 12px 10px; }
+        .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; object-fit: contain; }
         
-        /* ナビゲーション：スマホで2列になっても崩れない設定 */
+        /* ナビゲーション */
         nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
         .nav-link { 
             font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; 
@@ -33,24 +33,33 @@
         .nav-link:hover { color: var(--main-cyan); }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
 
-        /* スタートページ専用カード */
-        .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 20px 10px; max-width: 600px; margin: 0 auto; }
+        /* メインコンテンツ（縦並びカード） */
+        main { flex: 1; padding: 20px 10px; max-width: 600px; margin: 0 auto; width: 100%; }
+        
         .tool-card {
-            background: var(--card-bg); border-radius: 8px; padding: 25px 15px;
-            text-align: center; text-decoration: none; border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
+            display: flex; align-items: center;
+            background: var(--card-bg); border-radius: 12px; margin-bottom: 12px;
+            text-decoration: none; border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden; transition: 0.3s;
         }
-        .tool-card:hover { border-color: var(--main-cyan); background: #222; }
-        .tool-card h3 { color: #fff; margin: 0; font-size: 14px; letter-spacing: 0.1em; }
+        .tool-card:hover { border-color: var(--main-cyan); transform: scale(1.01); }
+        
+        .card-img { width: 40%; aspect-ratio: 4 / 3; object-fit: cover; background: #222; }
+        .card-body { width: 60%; padding: 15px; }
+        .card-title { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; display: block; }
+        .card-desc { font-size: 10px; color: #888; line-height: 1.4; }
+
+        /* フッター */
+        footer { padding: 20px 10px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; margin-top: 20px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.1em; color: #666; margin-bottom: 4px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.05em; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="header-inner">
-            <div class="flex justify-center">
-                <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
-            </div>
+            <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
             <nav>
                 <a href="index.html" class="nav-link active">HOME</a>
                 <a href="lineup.html" class="nav-link">LINEUP</a>
@@ -62,13 +71,52 @@
         </div>
     </header>
 
-    <main class="dashboard">
-        <a href="lineup.html" class="tool-card"><h3>LINEUP</h3></a>
-        <a href="matchday.html" class="tool-card"><h3>MATCH</h3></a>
-        <a href="rank20.html" class="tool-card"><h3>RANK 20</h3></a>
-        <a href="rank10.html" class="tool-card"><h3>RANK 10</h3></a>
-        <a href="stats.html" class="tool-card"><h3>STATS</h3></a>
+    <main>
+        <a href="lineup.html" class="tool-card">
+            <img src="menu-lineup.png" alt="" class="card-img">
+            <div class="card-body">
+                <span class="card-title text-[#4bb8e0]">LINEUP / メンバー解析</span>
+                <p class="card-desc">予想スタメンや確定メンバーを解析し、ピッチ図を含むグラフィックを生成します。</p>
+            </div>
+        </a>
+
+        <a href="matchday.html" class="tool-card">
+            <img src="menu-matchday.png" alt="" class="card-img">
+            <div class="card-body">
+                <span class="card-title text-[#4bb8e0]">MATCH / 対戦カード解析</span>
+                <p class="card-desc">日程データを解析し、キックオフ時刻や会場を含めた対戦カード画像を生成します。</p>
+            </div>
+        </a>
+
+        <a href="rank20.html" class="tool-card">
+            <img src="menu-rank20.png" alt="" class="card-img">
+            <div class="card-body">
+                <span class="card-title text-[#4bb8e0]">RANK 20 / 順位表解析</span>
+                <p class="card-desc">20チーム形式、または10チーム×2組の順位データを解析し、一覧画像を生成します。</p>
+            </div>
+        </a>
+
+        <a href="rank10.html" class="tool-card">
+            <img src="menu-rank10.png" alt="" class="card-img">
+            <div class="card-body">
+                <span class="card-title text-[#4bb8e0]">RANK 10 / 順位表解析</span>
+                <p class="card-desc">10チーム形式の順位表に特化した解析を行い、コンパクトな画像を生成します。</p>
+            </div>
+        </a>
+
+        <a href="stats.html" class="tool-card">
+            <img src="menu-stats.png" alt="" class="card-img">
+            <div class="card-body">
+                <span class="card-title text-[#4bb8e0]">STATS / スタッツ解析</span>
+                <p class="card-desc">走行距離や個人スタッツ、チームスタッツを解析して視覚化します。</p>
+            </div>
+        </a>
     </main>
+
+    <footer>
+        <div class="footer-copy">&copy; Goalink</div>
+        <div class="footer-powered">powered by HEKION</div>
+    </footer>
 
 </body>
 </html>
