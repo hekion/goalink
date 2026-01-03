@@ -7,48 +7,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 共通ヘッダー・フッター用 (元コードに干渉しないよう最小限に) --- */
+        /* --- 共通ヘッダー・フッター用 (index.htmlと完全に統一) --- */
         :root { --main-cyan: #4bb8e0; }
         header { 
             background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1);
             width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0;
         }
         .header-inner { max-width: 600px; margin: 0 auto; text-align: center; }
-        .site-logo { height: 52px; width: auto; margin-bottom: 10px; }
-        nav { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .site-logo { height: 52px; width: auto; margin-bottom: 10px; display: inline-block; }
+        nav { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
         .nav-link { 
             font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; 
             padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); 
-            text-decoration: none; border: 1px solid transparent;
+            text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em;
         }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
         footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
-        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; color: #888; margin-bottom: 6px; letter-spacing: 0.15em; }
-        .footer-powered { font-size: 9px; color: #444; text-transform: uppercase; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
 
-        /* --- 以下、元のコードのスタイルを「そのまま」貼り付け --- */
+        /* --- 以下、元のコードのスタイルをそのまま維持 --- */
         body { background: #111; color: white; font-family: sans-serif; padding: 0; margin: 0; display: flex; flex-direction: column; align-items: center; }
         textarea { width: 95%; max-width: 500px; height: 60px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; margin-top: 20px; margin-bottom: 10px; }
         .controls { display: flex; gap: 10px; margin-bottom: 15px; }
         button { background: #007AFF; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        #capture-area { 
-            width: 432px; 
-            background: #000; 
-            padding: 8px 15px 20px 15px; 
-            box-sizing: border-box; 
-            position: relative; 
-            display: flex;
-            flex-direction: column;
-            border: none; 
-        }
+        #capture-area { width: 432px; background: #000; padding: 8px 15px 20px 15px; box-sizing: border-box; position: relative; display: flex; flex-direction: column; border: none; }
         #capture-area.taking-photo { height: 540px !important; overflow: hidden !important; }
         #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.4; pointer-events: none; }
-
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 4px; position: relative; z-index: 1; height: 38px; flex-shrink: 0; }
         .team-container { width: 44%; display: flex; justify-content: center; padding: 0 5%; box-sizing: border-box; }
         .team-name { font-size: 18px; font-weight: 800; color: #fff; outline: none; border-bottom: 1px dashed #555; text-align: center; white-space: nowrap; }
-        
         .main { display: flex; justify-content: space-between; position: relative; z-index: 1; flex: 1; align-items: flex-start; }
         .col { width: 49%; display: flex; flex-direction: column; }
         .label { font-size: 9px; font-weight: 800; height: 14px; margin: 8px 0 4px 0; border-left: 4px solid #63bde3; padding-left: 6px; color: #fff; display: flex; align-items: center; flex-shrink: 0; }
@@ -63,7 +52,6 @@
     </style>
 </head>
 <body>
-
     <header>
         <div class="header-inner">
             <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
@@ -102,10 +90,8 @@
     </footer>
 
     <script>
-        /* --- 以下のロジックもお送りいただいたものと「1文字も変えず」貼り付け --- */
         let players = [];
         const posCycle = ["GK", "DF", "MF", "FW"];
-
         function parse() {
             const raw = document.getElementById('it').value.replace(/　/g, " ");
             const lines = raw.split('\n');
@@ -133,7 +119,6 @@
             });
             render();
         }
-
         function render() {
             const draw = (s) => {
                 const list = players.map((p, i) => ({...p, i})).filter(p => p.side === s);
@@ -144,28 +129,11 @@
             document.getElementById('col2').innerHTML = draw(1);
             setTimeout(autoScale, 100);
         }
-
         function genRow(p) {
-            return `<div class="row">
-                <span class="pos" onclick="rotatePos(${p.i})">${p.p}</span>
-                <span class="no">${p.n}</span>
-                <div class="name-container">
-                    <div class="name" contenteditable="true" onblur="players[${p.i}].nm=this.innerText" oninput="autoScale()">${p.nm}</div>
-                </div>
-                <span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span>
-            </div>`;
+            return `<div class="row"><span class="pos" onclick="rotatePos(${p.i})">${p.p}</span><span class="no">${p.n}</span><div class="name-container"><div class="name" contenteditable="true" onblur="players[${p.i}].nm=this.innerText" oninput="autoScale()">${p.nm}</div></div><span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span></div>`;
         }
-
-        function rotatePos(i) {
-            players[i].p = posCycle[(posCycle.indexOf(players[i].p) + 1) % posCycle.length];
-            render();
-        }
-
-        function move(i) {
-            players[i].side = players[i].side === 0 ? 1 : 0;
-            render();
-        }
-
+        function rotatePos(i) { players[i].p = posCycle[(posCycle.indexOf(players[i].p) + 1) % posCycle.length]; render(); }
+        function move(i) { players[i].side = players[i].side === 0 ? 1 : 0; render(); }
         function autoScale() {
             document.querySelectorAll('.name').forEach(el => {
                 el.style.transform = 'scaleX(1)';
@@ -173,40 +141,25 @@
                 const ew = el.scrollWidth;
                 if (ew > pw && pw > 0) el.style.transform = `scaleX(${(pw - 1) / ew})`;
             });
-
             const t1 = document.getElementById('t1');
             const t2 = document.getElementById('t2');
             let size = 18;
             t1.style.fontSize = size + "px";
             t2.style.fontSize = size + "px";
-
             const check = () => {
                 const pw1 = t1.parentElement.clientWidth * 0.9;
                 const pw2 = t2.parentElement.clientWidth * 0.9;
                 return (t1.scrollWidth > pw1 || t2.scrollWidth > pw2);
             };
-
-            while (check() && size > 7) {
-                size -= 0.5;
-                t1.style.fontSize = size + "px";
-                t2.style.fontSize = size + "px";
-            }
+            while (check() && size > 7) { size -= 0.5; t1.style.fontSize = size + "px"; t2.style.fontSize = size + "px"; }
         }
-
         function takePhoto() {
             const area = document.getElementById('capture-area');
             window.scrollTo(0, 0);
             area.classList.add('taking-photo');
             autoScale();
             setTimeout(() => {
-                html2canvas(area, { 
-                    scale: 4, 
-                    backgroundColor: "#000",
-                    width: 432,
-                    height: 540,
-                    scrollY: -window.scrollY,
-                    useCORS: true
-                }).then(c => {
+                html2canvas(area, { scale: 4, backgroundColor: "#000", width: 432, height: 540, scrollY: -window.scrollY, useCORS: true }).then(c => {
                     const res = document.getElementById('res');
                     res.innerHTML = '';
                     const img = new Image();
