@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINEUP | Goalink Analysis tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 共通デザイン用変数 --- */
+        :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; }
+        
+        /* --- 共通ヘッダー --- */
+        header { 
+            background: rgba(0,0,0,0.9); 
+            backdrop-filter: blur(10px); 
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            width: 100%; position: sticky; top: 0; z-index: 1000;
+        }
+        .header-inner { max-width: 600px; margin: 0 auto; padding: 12px 10px; text-align: center; }
+        .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; object-fit: contain; }
+        
+        nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+        .nav-link { 
+            font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; 
+            letter-spacing: 0.1em; padding: 6px 10px; border-radius: 4px;
+            color: rgba(255,255,255,0.4); text-decoration: none; transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover { color: var(--main-cyan); }
+        .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
+
+        /* --- 既存ツール部分のスタイル（変更なし） --- */
+        body { background: #111; color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        textarea { width: 95%; max-width: 500px; height: 60px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; margin: 20px 0 10px 0; }
+        .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { background: #007AFF; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        #capture-area { 
+            width: 432px; 
+            background: #000; 
+            padding: 8px 15px 20px 15px; 
+            box-sizing: border-box; 
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            border: none; 
+        }
+        #capture-area.taking-photo { height: 540px !important; overflow: hidden !important; }
+        #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.4; pointer-events: none; }
+
+        .lineup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 4px; position: relative; z-index: 1; height: 38px; flex-shrink: 0; }
+        .team-container { width: 44%; display: flex; justify-content: center; padding: 0 5%; box-sizing: border-box; }
+        .team-name { font-size: 18px; font-weight: 800; color: #fff; outline: none; border-bottom: 1px dashed #555; text-align: center; white-space: nowrap; }
+        
+        .main { display: flex; justify-content: space-between; position: relative; z-index: 1; flex: 1; align-items: flex-start; }
+        .col { width: 49%; display: flex; flex-direction: column; }
+        .label { font-size: 9px; font-weight: 800; height: 14px; margin: 8px 0 4px 0; border-left: 4px solid #63bde3; padding-left: 6px; color: #fff; display: flex; align-items: center; flex-shrink: 0; }
+        .row { display: flex; align-items: center; height: 21px; border-bottom: 1px solid #1a1a1a; box-sizing: border-box; overflow: hidden; flex-shrink: 0; }
+        .pos { width: 28px; color: #666; font-size: 9px; font-weight: bold; flex-shrink: 0; }
+        .no { width: 20px; font-weight: 800; margin-right: 5px; text-align: right; font-size: 11px; color: #888; flex-shrink: 0; }
+        .name-container { flex: 1; overflow: hidden; display: flex; align-items: center; height: 100%; }
+        .name { white-space: nowrap; font-size: 13px; font-weight: 800; color: #eee; outline: none; transform-origin: left center; width: 100%; }
+        .move-btn { font-size: 8px; padding: 1px 4px; cursor: pointer; background: #333; border: 1px solid #444; border-radius: 3px; margin-left: 3px; color: #fff; flex-shrink: 0; }
+        .taking-photo .move-btn { display: none !important; }
+        
+        #res img { max-width: 100%; width: 432px; display: block; margin: 20px auto; border: none; }
+
+        /* --- 共通フッター --- */
+        footer { padding: 25px 10px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
+            <nav>
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="lineup.html" class="nav-link active">LINEUP</a>
+                <a href="matchday.html" class="nav-link">MATCH</a>
+                <a href="rank20.html" class="nav-link">RANK 20</a>
+                <a href="rank10.html" class="nav-link">RANK 10</a>
+                <a href="stats.html" class="nav-link">STATS</a>
+            </nav>
+        </div>
+    </header>
+
+    <textarea id="it" placeholder="選手データを貼り付け"></textarea>
+    
+    <div class="controls">
+        <button onclick="parse()">1. 読み込む</button>
+        <button onclick="takePhoto()" style="background:#34c759;">2. 画像出力</button>
+    </div>
+
+    <div id="capture-area">
+        <div class="lineup-header">
+            <div class="team-container"><div class="team-name" contenteditable="true" id="t1" oninput="autoScale()">HOME</div></div>
+            <div style="color:#555; font-size: 10px; font-weight:bold;">VS</div>
+            <div class="team-container"><div class="team-name" contenteditable="true" id="t2" oninput="autoScale()">AWAY</div></div>
+        </div>
+        <div class="main">
+            <div id="col1" class="col"></div>
+            <div id="col2" class="col"></div>
+        </div>
+    </div>
+
+    <div id="res"></div>
+
+    <footer>
+        <div class="footer-copy">&copy; Goalink</div>
+        <div class="footer-powered">powered by HEKION</div>
+    </footer>
+
+    <script>
+        /* 既存のロジックは一切変更せず維持 */
+        let players = [];
+        const posCycle = ["GK", "DF", "MF", "FW"];
+
+        function parse() {
+            const raw = document.getElementById('it').value.replace(/　/g, " ");
+            const lines = raw.split('\n');
+            players = [];
+            let currentP = "GK", isB = false, totalCount = 0;
+            lines.forEach(line => {
+                const t = line.trim();
+                if (!t) return;
+                if (t.match(/GK|ゴールキーパー/i)) currentP = "GK";
+                else if (t.match(/DF|ディフェンダー/i)) currentP = "DF";
+                else if (t.match(/MF|ミッドフィルダー/i)) currentP = "MF";
+                else if (t.match(/FW|フォワード/i)) currentP = "FW";
+                if (t.match(/控え|SUB|ベンチ|交代/i)) isB = true;
+                if (t.match(/先発|スタメン|STARTER/i)) isB = false;
+                const regex = /(\d+)\s+([^0-9\n\r]+)/g;
+                let ms = [...t.matchAll(regex)];
+                ms.forEach((m, idx) => {
+                    let name = m[2].trim().replace(/\s(GK|DF|MF|FW)$/i, "").split(/▲|▼|[\(\[（]/)[0].trim();
+                    if (name.length > 0) {
+                        let side = (ms.length >= 2) ? idx : (Math.floor(totalCount / 11) % 2 === 0 ? 0 : 1);
+                        if (ms.length < 2) totalCount++;
+                        players.push({ p: currentP, n: m[1], nm: name, b: isB, side: side });
+                    }
+                });
+            });
+            render();
+        }
+
+        function render() {
+            const draw = (s) => {
+                const list = players.map((p, i) => ({...p, i})).filter(p => p.side === s);
+                return `<div class="label">STARTERS</div>` + list.filter(x => !x.b).map(x => genRow(x)).join('') +
+                       `<div class="label">SUBSTITUTES</div>` + list.filter(x => x.b).map(x => genRow(x)).join('');
+            };
+            document.getElementById('col1').innerHTML = draw(0);
+            document.getElementById('col2').innerHTML = draw(1);
+            setTimeout(autoScale, 100);
+        }
+
+        function genRow(p) {
+            return `<div class="row">
+                <span class="pos" onclick="rotatePos(${p.i})">${p.p}</span>
+                <span class="no">${p.n}</span>
+                <div class="name-container">
+                    <div class="name" contenteditable="true" onblur="players[${p.i}].nm=this.innerText" oninput="autoScale()">${p.nm}</div>
+                </div>
+                <span class="move-btn" onclick="move(${p.i})">${p.side === 0 ? '→' : '←'}</span>
+            </div>`;
+        }
+
+        function rotatePos(i) {
+            players[i].p = posCycle[(posCycle.indexOf(players[i].p) + 1) % posCycle.length];
+            render();
+        }
+
+        function move(i) {
+            players[i].side = players[i].side === 0 ? 1 : 0;
+            render();
+        }
+
+        function autoScale() {
+            document.querySelectorAll('.name').forEach(el => {
+                el.style.transform = 'scaleX(1)';
+                const pw = el.parentElement.clientWidth;
+                const ew = el.scrollWidth;
+                if (ew > pw && pw > 0) el.style.transform = `scaleX(${(pw - 1) / ew})`;
+            });
+
+            const t1 = document.getElementById('t1');
+            const t2 = document.getElementById('t2');
+            let size = 18;
+            t1.style.fontSize = size + "px";
+            t2.style.fontSize = size + "px";
+
+            const check = () => {
+                const pw1 = t1.parentElement.clientWidth * 0.9;
+                const pw2 = t2.parentElement.clientWidth * 0.9;
+                return (t1.scrollWidth > pw1 || t2.scrollWidth > pw2);
+            };
+
+            while (check() && size > 7) {
+                size -= 0.5;
+                t1.style.fontSize = size + "px";
+                t2.style.fontSize = size + "px";
+            }
+        }
+
+        function takePhoto() {
+            const area = document.getElementById('capture-area');
+            window.scrollTo(0, 0);
+            area.classList.add('taking-photo');
+            autoScale();
+            setTimeout(() => {
+                html2canvas(area, { 
+                    scale: 4, 
+                    backgroundColor: "#000",
+                    width: 432,
+                    height: 540,
+                    scrollY: -window.scrollY,
+                    useCORS: true
+                }).then(c => {
+                    const res = document.getElementById('res');
+                    res.innerHTML = '';
+                    const img = new Image();
+                    img.src = c.toDataURL();
+                    res.appendChild(img);
+                    area.classList.remove('taking-photo');
+                });
+            }, 100);
+        }
+    </script>
+</body>
+</html>
