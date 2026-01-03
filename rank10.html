@@ -17,7 +17,7 @@
         .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
         
-        /* --- ① 操作パネル (統一) --- */
+        /* --- ① 操作パネル --- */
         .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 540px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
         textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
         .btn-group { display: flex; gap: 10px; }
@@ -29,28 +29,35 @@
         .preview-container { width: 100%; max-width: 540px; display: flex; justify-content: center; }
         #capture-area { 
             width: 540px; height: 540px; background: #000; overflow: hidden; 
-            display: flex; flex-direction: column; justify-content: center; padding: 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: center; padding: 5px; box-sizing: border-box;
             flex-shrink: 0; position: relative;
         }
         #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
 
-        /* リーグ名なしのためタイトル削除または最小化 */
-        .main-league-title { display: none; }
+        /* テーブル幅を530pxに固定して画面内に収める */
+        table { width: 530px; margin: 0 auto; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
+        th, td { text-align: center; white-space: nowrap; font-weight: 500; overflow: hidden; }
+        
+        /* 列幅の精密配分 (合計 530px) */
+        .col-r   { width: 28px; }   /* 順位 */
+        .col-t   { width: 155px; }  /* チーム名 (圧縮対象) */
+        .col-m   { width: 30px; }   /* 試 */
+        .col-pts { width: 40px; }   /* 点 */
+        .col-s   { width: 30px; }   /* 勝・分・負 */
+        .col-g   { width: 36px; }   /* 得・失 */
+        .col-gd  { width: 55px; }   /* 差 (3桁対応) */
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
-        th, td { text-align: center; white-space: nowrap; line-height: 1.6; font-weight: 500; }
-        th { font-size: 12px; color: #777; padding-bottom: 12px; border-bottom: 2px solid #444; }
-        td { font-size: 16px; padding: 10px 0; border-bottom: 1px solid #222; color: #eee; }
+        th { font-size: 11px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; }
+        td { font-size: 15px; height: 46px; border-bottom: 1px solid #222; color: #eee; }
+
+        /* チーム名自動縮小設定 */
+        .col-t-val { text-align: left; padding-left: 5px; width: 155px; }
+        .name-wrapper { width: 150px; overflow: visible; display: flex; align-items: center; }
+        .name-inner { font-size: 17px; font-weight: 900; color: #fff; white-space: nowrap; display: inline-block; transform-origin: left center; }
         
-        .col-t-val { font-weight: 900 !important; font-size: 18px; color: #fff; text-align: left; padding-left: 10px; }
         .col-pts-val { background: rgba(255,255,255,0.08); color: #fff; font-weight: 900; }
-        
-        /* 540pxに合わせた列幅調整 */
-        .col-r { width: 35px; } .col-t { width: 190px; } .col-m { width: 35px; } 
-        .col-pts { width: 45px; } .col-s { width: 32px; color: #777; }
-        .col-g { width: 35px; color: #777; } .col-gd { width: 45px; }
-        .team-name { overflow: hidden; text-overflow: ellipsis; display: block; }
-        
+        .col-gd-val { font-weight: 700; color: #fff; }
+
         #res img { margin-top: 20px; width: 100%; max-width: 540px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #333; }
 
         /* --- ② フッター --- */
@@ -106,13 +113,11 @@
     </footer>
 
     <script>
-        const teamDict = { "鹿島": "鹿島アントラーズ", "浦和": "浦和レッズ", "横浜FM": "横浜F・マリノス", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "広島": "サンフレッチェ広島", "名古屋": "名古屋グランパス", "福岡": "アビスパ福岡", "鳥栖": "サガン鳥栖", "札幌": "北海道コンサドーレ札幌", "新潟": "アルビレックス新潟", "磐田": "ジュビロ磐田", "東京V": "東京ヴェルディ", "FC東京": "FC東京", "湘南": "湘南ベルマーレ", "京都": "京都サンガF.C.", "柏": "柏レイソル" };
+        const teamDict = { "札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球" };
 
         function getConvertedName(name) {
             if(!name) return "";
             let n = name.trim();
-            const half = Math.floor(n.length / 2);
-            if (n.length >= 4 && n.substring(0, half) === n.substring(half)) n = n.substring(0, half);
             for (let key in teamDict) { if (n.includes(key)) return teamDict[key]; }
             return n;
         }
@@ -144,10 +149,15 @@
         function renderStanding(data) {
             const body = document.getElementById('standing-body');
             let html = "";
-            data.slice(0, 10).forEach((d, index) => {
+            data.slice(0, 10).forEach((d) => {
+                const gdVal = parseInt(d.gd);
+                const gdDisplay = gdVal > 0 ? '+' + gdVal : gdVal;
+
                 html += `<tr>
                     <td contenteditable="true">${d.rank}</td>
-                    <td class="col-t-val"><span class="team-name" contenteditable="true">${d.team}</span></td>
+                    <td class="col-t-val">
+                        <div class="name-wrapper"><div class="name-inner" contenteditable="true">${d.team}</div></div>
+                    </td>
                     <td contenteditable="true">${d.m}</td>
                     <td class="col-pts-val" contenteditable="true">${d.pts}</td>
                     <td contenteditable="true">${d.w}</td>
@@ -155,25 +165,41 @@
                     <td contenteditable="true">${d.l}</td>
                     <td contenteditable="true">${d.gf}</td>
                     <td contenteditable="true">${d.ga}</td>
-                    <td contenteditable="true">${parseInt(d.gd)>0?'+'+d.gd:d.gd}</td>
+                    <td class="col-gd-val" contenteditable="true">${gdDisplay}</td>
                 </tr>`;
             });
             body.innerHTML = html;
+            autoAdjustNames();
+        }
+
+        function autoAdjustNames() {
+            const MAX_W = 150; 
+            document.querySelectorAll('.name-inner').forEach(el => {
+                el.style.fontSize = "17px";
+                el.style.transform = "scaleX(1)";
+                if (el.offsetWidth > MAX_W) {
+                    const ratio = MAX_W / el.offsetWidth;
+                    el.style.transform = `scaleX(${ratio})`;
+                }
+            });
         }
 
         function takePhoto() {
-            html2canvas(document.getElementById('capture-area'), { 
-                scale: 2, 
-                backgroundColor: "#000",
-                width: 540,
-                height: 540
-            }).then(c => {
-                const res = document.getElementById('res');
-                res.innerHTML = '';
-                const img = new Image();
-                img.src = c.toDataURL();
-                res.appendChild(img);
-            });
+            autoAdjustNames();
+            setTimeout(() => {
+                html2canvas(document.getElementById('capture-area'), { 
+                    scale: 2, 
+                    backgroundColor: "#000",
+                    width: 540,
+                    height: 540
+                }).then(c => {
+                    const res = document.getElementById('res');
+                    res.innerHTML = '';
+                    const img = new Image();
+                    img.src = c.toDataURL();
+                    res.appendChild(img);
+                });
+            }, 50);
         }
     </script>
 </body>
