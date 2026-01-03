@@ -3,189 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MATCH | Goalink Analysis tools</title>
+    <title>MATCHDAY | Goalink Analysis tools</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 共通デザイン --- */
-        :root { --main-cyan: #4bb8e0; }
-        body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
-        header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
+        /* --- 共通デザイン・ベース --- */
+        :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; }
+        body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; min-height: 100vh; }
+        
+        /* --- ヘッダー・ナビゲーション --- */
+        header { background: rgba(0,0,0,0.95); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; backdrop-filter: blur(10px); }
         .header-inner { width: 100%; max-width: 600px; text-align: center; }
         .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; }
         nav { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
-        .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
+        .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; transition: 0.3s; }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
         
         /* --- 操作パネル --- */
-        .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
-        textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .btn-parse { background: #007AFF; }
-        .btn-photo { background: #34c759; }
+        .controls { background: #222; padding: 20px; border-radius: 12px; margin: 25px 0; width: 95%; max-width: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        .label-text { font-size: 11px; color: #888; font-weight: bold; letter-spacing: 0.1em; }
+        .input-row { display: flex; gap: 10px; }
+        input { flex: 1; background: #333; color: #fff; border: 1px solid #444; border-radius: 8px; padding: 12px; font-size: 14px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--main-cyan); background: #3d3d3d; }
+        .btn-photo { background: #34c759; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .btn-photo:hover { background: #2eb34f; transform: translateY(-2px); }
 
-        /* --- キャンバスエリア --- */
-        #capture-area { width: 432px; height: 540px; background: #000; overflow: hidden; position: relative; display: flex; flex-direction: column; padding: 15px 10px 25px 10px; box-sizing: border-box; }
-        #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
+        /* --- プレビュー・キャプチャエリア --- */
+        .preview-container { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; margin-bottom: 50px; }
+        #capture-area { 
+            width: 800px; height: 500px; background: var(--bg-black); overflow: hidden; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; box-sizing: border-box;
+        }
+        #capture-area::before { content: ""; position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.4; pointer-events: none; }
         
-        .header-content { text-align: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; margin-left: 20px; margin-right: 20px; position: relative; z-index: 1; }
-        .league-title { font-size: 17px; font-weight: 900; color: #ffffff; }
-        .round-info { font-size: 12px; font-weight: 700; color: #ffffff; opacity: 0.8; }
-        
-        .matches-list { flex: 1; display: flex; flex-direction: column; justify-content: space-between; z-index: 1; }
-        .match-row { display: flex; align-items: center; justify-content: center; height: 38px; width: 100%; }
-        
-        .team-side { width: 150px; flex-shrink: 0; display: flex; align-items: center; }
-        .team-h { justify-content: flex-end; padding-right: 8px; }
-        .team-a { justify-content: flex-start; padding-left: 8px; }
-        
-        .name-inner { font-size: 14px; font-weight: 900; white-space: nowrap; display: inline-block; transition: none; outline: none; }
-        
-        .center-box { width: 100px; height: 32px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; flex-shrink: 0; }
-        .c-date-time { font-size: 8px; font-weight: 800; color: #fff; text-align: center; line-height: 1.1; }
-        .c-venue { font-size: 8px; font-weight: 600; color: #fff; opacity: 0.9; margin-top: 1px; max-width: 95%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
-        .score-display { font-size: 18px; font-weight: 900; display: none; color: #fff; }
-        
-        .mode-results .c-date-time, .mode-results .c-venue { display: none; }
-        .mode-results .score-display { display: block; }
-        #res img { margin: 20px auto; width: 432px; display: block; }
+        /* 装飾的なライン */
+        .decor-line { position: absolute; width: 60px; height: 2px; background: var(--main-cyan); }
+        .line-tl { top: 40px; left: 40px; }
+        .line-br { bottom: 40px; right: 40px; }
 
-        /* --- フッター (lineup.htmlと同期) --- */
-        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
-        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
-        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
+        .match-card { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        /* MATCHWEEK */
+        .match-week { font-family: 'Oswald', sans-serif; font-size: 18px; color: #555; letter-spacing: 0.5em; margin-bottom: 20px; font-weight: 500; }
+
+        /* TEAMS */
+        .teams-row { display: flex; align-items: center; justify-content: center; width: 100%; gap: 30px; margin-bottom: 30px; }
+        .team-box { width: 340px; text-align: center; }
+        .team-name { font-size: 56px; font-weight: 900; color: #fff; line-height: 1.1; letter-spacing: -0.02em; text-transform: uppercase; }
+        .vs-box { font-family: 'Oswald', sans-serif; font-size: 36px; font-weight: 700; color: rgba(255,255,255,0.1); font-style: italic; }
+
+        /* DATE & TIME (同一行) */
+        .match-info-row { display: flex; align-items: center; gap: 24px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 8px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.05); }
+        .info-item { font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 24px; color: var(--main-cyan); letter-spacing: 0.15em; }
+        .info-divider { width: 1px; height: 18px; background: rgba(75, 184, 224, 0.3); }
+
+        /* STADIUM */
+        .stadium-name { font-size: 16px; color: #888; letter-spacing: 0.2em; font-weight: 500; text-transform: uppercase; }
+
+        /* --- 結果出力 --- */
+        #res { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 60px; }
+        #res canvas, #res img { width: 100%; border: 2px solid #333; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .download-msg { font-size: 12px; color: var(--main-cyan); font-weight: bold; }
+
+        /* --- フッター --- */
+        footer { padding: 40px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 0.2em; color: #555; }
     </style>
 </head>
-<body class="mode-info">
+<body>
 
-<header>
-    <div class="header-inner">
-        <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
-        <nav>
-            <a href="index.html" class="nav-link">HOME</a>
-            <a href="lineup.html" class="nav-link">LINEUP</a>
-            <a href="matchday.html" class="nav-link active">MATCH</a>
-            <a href="rank20.html" class="nav-link">RANK 20</a>
-            <a href="rank10.html" class="nav-link">RANK 10</a>
-            <a href="stats.html" class="nav-link">STATS</a>
-        </nav>
+    <header>
+        <div class="header-inner">
+            <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
+            <nav>
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="lineup.html" class="nav-link">LINEUP</a>
+                <a href="matchday.html" class="nav-link active">MATCH</a>
+                <a href="rank20.html" class="nav-link">RANK 20</a>
+                <a href="rank10.html" class="nav-link">RANK 10</a>
+                <a href="stats.html" class="nav-link">STATS</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="controls">
+        <div class="control-group">
+            <span class="label-text">CATEGORY / WEEK</span>
+            <input type="text" id="weekInput" placeholder="2026 MEIJI YASUDA J1 LEAGUE 第1節" oninput="updatePreview()">
+        </div>
+        <div class="control-group">
+            <span class="label-text">DATE & TIME</span>
+            <div class="input-row">
+                <input type="text" id="dateInput" placeholder="2026.01.03 [SAT]" oninput="updatePreview()">
+                <input type="text" id="timeInput" placeholder="14:00 KICK OFF" oninput="updatePreview()">
+            </div>
+        </div>
+        <div class="control-group">
+            <span class="label-text">MATCHUP</span>
+            <div class="input-row">
+                <input type="text" id="homeInput" placeholder="HOME TEAM" oninput="updatePreview()">
+                <input type="text" id="awayInput" placeholder="AWAY TEAM" oninput="updatePreview()">
+            </div>
+        </div>
+        <div class="control-group">
+            <span class="label-text">VENUE</span>
+            <input type="text" id="stadiumInput" placeholder="NATIONAL STADIUM" oninput="updatePreview()">
+        </div>
+        <button class="btn-photo" onclick="takePhoto()">GENERATE IMAGE</button>
     </div>
-</header>
 
-<div class="controls">
-    <textarea id="it" placeholder="日程データを貼り付け"></textarea>
-    <div style="display:flex; gap:10px;">
-        <select id="mode-select" onchange="updateMode()" style="flex:1; background:#333; color:white; border-radius:8px; border:1px solid #444; padding:8px;">
-            <option value="mode-info">告知モード</option>
-            <option value="mode-results">結果モード</option>
-        </select>
-        <div style="flex:1; display:flex; align-items:center; gap:8px;">
-            <span style="font-size:11px; color:#aaa; white-space:nowrap;">色:</span>
-            <input type="color" id="center-color" value="#7a1200" oninput="syncColor()" style="width:100%; height:32px; border:none; background:transparent; cursor:pointer;">
+    <div class="preview-container">
+        <div id="capture-area">
+            <div class="decor-line line-tl"></div>
+            <div class="decor-line line-br"></div>
+            
+            <div class="match-card">
+                <div id="previewWeek" class="match-week">2026 J1 LEAGUE 第1節</div>
+                
+                <div class="teams-row">
+                    <div class="team-box"><div id="previewHome" class="team-name" contenteditable="true">HOME TEAM</div></div>
+                    <div class="vs-box">VS</div>
+                    <div class="team-box"><div id="previewAway" class="team-name" contenteditable="true">AWAY TEAM</div></div>
+                </div>
+
+                <div class="match-info-row">
+                    <div id="previewDate" class="info-item">2026.01.03</div>
+                    <div class="info-divider"></div>
+                    <div id="previewTime" class="info-item">14:00 K.O.</div>
+                </div>
+
+                <div id="previewStadium" class="stadium-name">NATIONAL STADIUM</div>
+            </div>
         </div>
     </div>
-    <div class="btn-group">
-        <button class="btn-parse" onclick="parse()">1. 読み込む</button>
-        <button class="btn-photo" onclick="takePhoto()">2. 画像出力</button>
-    </div>
-</div>
 
-<div id="capture-area" class="mode-info">
-    <div class="header-content">
-        <div class="league-title" id="out-league" contenteditable="true">明治安田Ｊ１リーグ</div>
-        <div class="round-info" id="out-round" contenteditable="true">第1節</div>
-    </div>
-    <div class="matches-list" id="match-container"></div>
-</div>
+    <div id="res"></div>
 
-<div id="res"></div>
+    <footer>
+        <div class="footer-copy">&copy; 2026 GOALINK ANALYSIS / ALL RIGHTS RESERVED.</div>
+    </footer>
 
-<footer>
-    <div class="footer-copy">&copy; Goalink</div>
-    <div class="footer-powered">powered by HEKION</div>
-</footer>
-
-<script>
-    const teamDict = { "札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球" };
-    function toHalfWidth(str) { return str.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/\s+/g, '').trim(); }
-    function isTeam(name) { if (!name) return false; const n = toHalfWidth(name); for (let key in teamDict) { if (n.includes(toHalfWidth(key)) || toHalfWidth(teamDict[key]).includes(n)) return true; } return false; }
-    function getConvertedName(name) { if (!name) return ""; const n = toHalfWidth(name); for (let key in teamDict) { if (n === toHalfWidth(key)) return teamDict[key]; } return name; }
-
-    function parse() {
-        const raw = document.getElementById('it').value;
-        const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== "");
-        let tempMatchData = [];
-        let currentDate = "";
-        for (let i = 0; i < lines.length; i++) {
-            const dateMatch = lines[i].match(/(\d{1,2}月\d{1,2}日\(.\))/);
-            if(dateMatch) { currentDate = dateMatch[0]; continue; }
-            const timeMatch = lines[i].match(/^(\d{1,2}:\d{2})$/);
-            if(timeMatch) {
-                const time = timeMatch[1];
-                let h = lines[i-1], line1 = lines[i+1] || "", line2 = lines[i+2] || "";
-                if (toHalfWidth(line1).toUpperCase() === "VS") { line1 = lines[i+2] || ""; line2 = lines[i+3] || ""; }
-                let a = "", v = "";
-                if (!isTeam(line1) && isTeam(line2)) { a = line2; v = line1; } else { a = line1; v = line2; }
-                if(h && a && !h.includes("EAST")) {
-                    tempMatchData.push({ date: currentDate, time: time, home: getConvertedName(h), away: getConvertedName(a), venue: v });
-                }
-            }
+    <script>
+        // プレビューのリアルタイム更新
+        function updatePreview() {
+            document.getElementById('previewWeek').innerText = document.getElementById('weekInput').value || '2026 J1 LEAGUE 第1節';
+            document.getElementById('previewDate').innerText = document.getElementById('dateInput').value || '2026.01.03';
+            document.getElementById('previewTime').innerText = document.getElementById('timeInput').value || '14:00 K.O.';
+            document.getElementById('previewHome').innerText = document.getElementById('homeInput').value || 'HOME TEAM';
+            document.getElementById('previewAway').innerText = document.getElementById('awayInput').value || 'AWAY TEAM';
+            document.getElementById('previewStadium').innerText = document.getElementById('stadiumInput').value || 'NATIONAL STADIUM';
         }
-        render(tempMatchData);
-    }
 
-    function render(data) {
-        const container = document.getElementById('match-container');
-        const color = document.getElementById('center-color').value;
-        container.innerHTML = data.slice(0, 10).map(m => `
-            <div class="match-row">
-                <div class="team-side team-h"><div class="name-inner" contenteditable="true">${m.home}</div></div>
-                <div class="center-box" style="background: ${color}">
-                    <div class="c-date-time">${m.date}<br>${m.time}</div>
-                    <div class="c-venue" contenteditable="true">${m.venue}</div>
-                    <div class="score-display" contenteditable="true">0 - 0</div>
-                </div>
-                <div class="team-side team-a"><div class="name-inner" contenteditable="true">${m.away}</div></div>
-            </div>
-        `).join('');
-        autoAdjustAll();
-    }
+        // html2canvasによる画像生成
+        function takePhoto() {
+            const area = document.getElementById('capture-area');
+            const resContainer = document.getElementById('res');
+            
+            // 生成中のフィードバック
+            resContainer.innerHTML = '<span class="download-msg">GENERATING...</span>';
 
-    function autoAdjustAll() {
-        const MAX_W = 142;
-        document.querySelectorAll('.name-inner').forEach(el => {
-            el.style.fontSize = "14px";
-            el.style.transform = "scaleX(1)";
-            let size = 14;
-            while (el.offsetWidth > MAX_W && size > 7) {
-                size -= 0.2;
-                el.style.fontSize = size + "px";
-            }
-            if (el.offsetWidth > MAX_W) {
-                const ratio = MAX_W / el.offsetWidth;
-                el.style.transform = `scaleX(${ratio})`;
-            }
-        });
-        document.querySelectorAll('.team-h .name-inner').forEach(el => el.style.transformOrigin = 'right center');
-        document.querySelectorAll('.team-a .name-inner').forEach(el => el.style.transformOrigin = 'left center');
-    }
-
-    function syncColor() { const color = document.getElementById('center-color').value; document.querySelectorAll('.center-box').forEach(el => el.style.background = color); }
-    function updateMode() { document.getElementById('capture-area').className = document.getElementById('mode-select').value; autoAdjustAll(); }
-    
-    function takePhoto() {
-        autoAdjustAll();
-        setTimeout(() => {
-            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: "#000", width: 432, height: 540 }).then(c => {
-                const res = document.getElementById('res');
-                res.innerHTML = '';
+            html2canvas(area, { 
+                scale: 2, 
+                backgroundColor: "#0c0c0c",
+                width: 800,
+                height: 500,
+                useCORS: true
+            }).then(canvas => {
+                resContainer.innerHTML = '';
                 const img = new Image();
-                img.src = c.toDataURL();
-                res.appendChild(img);
+                img.src = canvas.toDataURL("image/png");
+                resContainer.appendChild(img);
+                
+                const msg = document.createElement('span');
+                msg.className = 'download-msg';
+                msg.innerText = '長押し、または右クリックで保存してください';
+                resContainer.appendChild(msg);
             });
-        }, 100);
-    }
-</script>
+        }
+
+        // 初期実行
+        updatePreview();
+    </script>
 </body>
 </html>
