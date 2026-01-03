@@ -36,12 +36,10 @@
         .matches-list { flex: 1; display: flex; flex-direction: column; justify-content: space-between; z-index: 1; }
         .match-row { display: flex; align-items: center; justify-content: center; height: 38px; width: 100%; }
         
-        /* チーム名エリアの幅を厳密に固定 */
         .team-side { width: 150px; flex-shrink: 0; display: flex; align-items: center; }
         .team-h { justify-content: flex-end; padding-right: 8px; }
         .team-a { justify-content: flex-start; padding-left: 8px; }
         
-        /* 文字がはみ出しても一旦隠さない設定 */
         .name-inner { font-size: 14px; font-weight: 900; white-space: nowrap; display: inline-block; transition: none; outline: none; }
         
         .center-box { width: 100px; height: 32px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; flex-shrink: 0; }
@@ -52,7 +50,11 @@
         .mode-results .c-date-time, .mode-results .c-venue { display: none; }
         .mode-results .score-display { display: block; }
         #res img { margin: 20px auto; width: 432px; display: block; }
+
+        /* --- フッター (lineup.htmlと同期) --- */
         footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
     </style>
 </head>
 <body class="mode-info">
@@ -147,29 +149,24 @@
                 <div class="team-side team-a"><div class="name-inner" contenteditable="true">${m.away}</div></div>
             </div>
         `).join('');
-        // ここで即座にサイズ調整を実行
         autoAdjustAll();
     }
 
     function autoAdjustAll() {
-        const MAX_W = 142; // 各サイドの最大許容幅
+        const MAX_W = 142;
         document.querySelectorAll('.name-inner').forEach(el => {
-            el.style.fontSize = "14px"; // 一旦初期化
+            el.style.fontSize = "14px";
             el.style.transform = "scaleX(1)";
-            
-            // 1. フォントサイズを段階的に縮小
             let size = 14;
             while (el.offsetWidth > MAX_W && size > 7) {
                 size -= 0.2;
                 el.style.fontSize = size + "px";
             }
-            // 2. それでもダメなら横幅を少し圧縮
             if (el.offsetWidth > MAX_W) {
                 const ratio = MAX_W / el.offsetWidth;
                 el.style.transform = `scaleX(${ratio})`;
             }
         });
-        // 起点の再設定
         document.querySelectorAll('.team-h .name-inner').forEach(el => el.style.transformOrigin = 'right center');
         document.querySelectorAll('.team-a .name-inner').forEach(el => el.style.transformOrigin = 'left center');
     }
@@ -178,7 +175,7 @@
     function updateMode() { document.getElementById('capture-area').className = document.getElementById('mode-select').value; autoAdjustAll(); }
     
     function takePhoto() {
-        autoAdjustAll(); // 撮影直前に再計算
+        autoAdjustAll();
         setTimeout(() => {
             html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: "#000", width: 432, height: 540 }).then(c => {
                 const res = document.getElementById('res');
