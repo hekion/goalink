@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 共通ヘッダー・フッター (index/lineupと完全同期) --- */
+        /* --- 共通ヘッダー・フッター (完全同期) --- */
         :root { --main-cyan: #4bb8e0; }
         header { 
             background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -27,7 +27,7 @@
         .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
         .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
 
-        /* --- ツール本体のスタイル --- */
+        /* --- ツール本体スタイル --- */
         body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
         .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; }
         textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 4px; padding: 10px; font-size: 14px; box-sizing: border-box; }
@@ -49,8 +49,8 @@
         .name-inner { font-size: 14px; font-weight: 900; transform-origin: center; flex-shrink: 0; }
         
         .center-box { width: 110px; height: 35px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 4px; flex-shrink: 0; }
-        .c-date-time { font-size: 8px; font-weight: 800; color: #fff; }
-        .c-venue { font-size: 8.5px; font-weight: 600; color: #fff; opacity: 0.95; margin-top: 2px; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .c-date-time { font-size: 8px; font-weight: 800; color: #fff; text-align: center; line-height: 1.2; }
+        .c-venue { font-size: 8.5px; font-weight: 600; color: #fff; opacity: 0.95; margin-top: 2px; max-width: 95%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
         .score-display { font-size: 19px; font-weight: 900; display: none; color: #fff; }
         
         .mode-results .c-date-time, .mode-results .c-venue { display: none; }
@@ -146,22 +146,23 @@
                 const timeMatch = lines[i].match(/^(\d{1,2}:\d{2})$/);
                 if(timeMatch) {
                     const time = timeMatch[1];
-                    let h = "", a = "", v = "";
-                    let foundVS = false;
-                    for(let j = 1; j <= 2; j++) {
-                        if (lines[i+j] && toHalfWidth(lines[i+j]).toUpperCase() === "VS") {
-                            h = lines[i-1];
-                            if(j === 2) { v = lines[i+1]; a = lines[i+3]; } 
-                            else { a = lines[i+2]; if(lines[i+3] && lines[i+3] !== "DAZN") v = lines[i+3]; }
-                            foundVS = true; break;
-                        }
+                    let h = lines[i-1];
+                    let line1 = lines[i+1] || "";
+                    let line2 = lines[i+2] || "";
+                    
+                    let a = "";
+                    let v = "";
+
+                    // 【改善ロジック】アウェーチームとスタジアムの入れ替え判定
+                    // 辞書に載っているチーム名がline2にある場合、またはline1が明らかに短い（略称スタジアム名）場合に入れ替え
+                    if (getConvertedName(line2) !== line2 || line1.length <= 4) {
+                        a = line2; // 下の行がチーム
+                        v = line1; // 上の行が会場
+                    } else {
+                        a = line1; // 上の行がチーム
+                        v = line2; // 下の行が会場
                     }
-                    if(!foundVS) {
-                        let hIdx = (lines[i-1] === "みどころ") ? i-2 : i-1;
-                        let aIdx = (lines[i+1] === "みどころ") ? i+2 : i+1;
-                        let vIdx = (lines[i+1] === "みどころ") ? i+3 : i+2;
-                        h = lines[hIdx]; a = lines[aIdx]; v = lines[vIdx];
-                    }
+
                     if(h && a && !h.includes("EAST") && !h.includes("WEST")) {
                         tempMatchData.push({ 
                             date: currentDate || "", 
@@ -184,7 +185,7 @@
                 <div class="match-row">
                     <div class="team-side team-h"><div class="name-inner" contenteditable="true">${m.home}</div></div>
                     <div class="center-box" style="background: ${color}">
-                        <div class="c-date-time">${m.date} ${m.time}</div>
+                        <div class="c-date-time">${m.date}<br>${m.time}</div>
                         <div class="c-venue" contenteditable="true">${m.venue}</div>
                         <div class="score-display" contenteditable="true">0 - 0</div>
                     </div>
