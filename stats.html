@@ -116,7 +116,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="データを貼り付け"></textarea>
+        <textarea id="it" placeholder="[特定項目半角化 適用済み] データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-info" onclick="parseStats()">1. スタッツ解析</button>
             <button class="btn-member" onclick="parseMember()">2. メンバー解析</button>
@@ -166,8 +166,9 @@ const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿
 const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
-// 指定された文字列内の全角英数字・記号を半角に変換する
+// 指定4箇所のみに使用する半角化関数
 function toHalfWidth(str) {
+    if(!str) return "";
     return str.replace(/[！-～]/g, function(s) {
         return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
     }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
@@ -228,13 +229,12 @@ function toggleCard(el) {
 }
 
 function parseStats() {
-    const it = document.getElementById('it').value;
-    const lines = it.split('\n').map(l => l.trim()).filter(l => l);
+    const rawInput = document.getElementById('it').value;
+    const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
 
-    // 1. チーム名抽出 (重複を自動除去)
     let foundTeams = [];
     for(let line of lines) {
-        let cleanLine = line.replace(/^(.+)\1$/, '$1'); // 全チーム共通の重複消し
+        let cleanLine = line.replace(/^(.+)\1$/, '$1'); 
         for (let key in TEAM_DICT) {
             if (cleanLine.includes(key) && !foundTeams.includes(TEAM_DICT[key])) {
                 foundTeams.push(TEAM_DICT[key]);
@@ -248,7 +248,6 @@ function parseStats() {
         syncTeamSize();
     }
 
-    // 2. スコア抽出 (限定半角化適用)
     let hScore = "0", aScore = "0";
     const halfIndex = lines.findIndex(l => l.includes("前半"));
     if (halfIndex !== -1) {
@@ -261,20 +260,19 @@ function parseStats() {
     sc.innerText = toHalfWidth(`${hScore}-${aScore}`);
     autoShrink(sc, 85, 32);
 
-    // 3. 試合情報 (限定半角化適用)
-    const dateM = it.match(/\d{4}年\d+月\d+日.*KO/);
-    const stadiumM = it.match(/KO\s*\n\s*(.*)/) || it.match(/スタジアム\t(.*)/) || it.match(/スタジアム\s+(.*)/);
-    const audM = it.match(/入場者数[\s\t]+([\d,]+人)/);
+    let dateStr = "", stadiumStr = "", audienceStr = "";
+    lines.forEach((line) => {
+        if (line.match(/\d{4}年\d+月\d+日/)) dateStr = toHalfWidth(line);
+        if (line.includes("入場者数")) audienceStr = toHalfWidth(line.replace("入場者数", "観客:"));
+    });
+
+    const stadiumM = rawInput.match(/KO\s*\n\s*([^\n]+)/) || rawInput.match(/スタジアム\t([^\n]+)/) || rawInput.match(/スタジアム\s+([^\n]+)/);
+    if (stadiumM) stadiumStr = toHalfWidth(stadiumM[1].trim());
+
     const vi = document.getElementById('vi');
-    
-    let datePart = dateM ? toHalfWidth(dateM[0]) : '';
-    let stadiumPart = stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : '';
-    let audPart = audM ? toHalfWidth('観客:' + audM[1]) : '';
-    
-    vi.innerText = `${datePart} / ${stadiumPart} / ${audPart}`;
+    vi.innerText = `${dateStr} / ${stadiumStr} / ${audienceStr}`;
     autoShrink(vi, 400);
 
-    // 4. スタッツ数値
     const statsMap = {"SH": 1, "CK": 7, "FK": 8};
     lines.forEach(line => {
         const m = line.match(/(\d+)(SH|CK|FK)(\d+)/);
