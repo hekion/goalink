@@ -4,30 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>STATS | Goalink Analysis tools</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        /* 共通スタイル（index.htmlから引用） */
-        :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; --card-bg: #1a1a1a; }
+        /* --- 共通ヘッダー・フッター (他ツールと完全同期) --- */
+        :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; }
         body { background-color: var(--bg-black); color: #fff; font-family: 'Noto Sans JP', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
+        
+        header { 
+            background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1);
+            width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0;
+            display: flex; justify-content: center;
+        }
         .header-inner { width: 100%; max-width: 600px; text-align: center; }
         .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; }
         nav { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
-        .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
+        .nav-link { 
+            font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; 
+            padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); 
+            text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1;
+        }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
-        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 20px; }
+        
+        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
         .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
         .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
 
-        /* エディター専用スタイル（元のコードを維持） */
-        .ui-panel { width: 100%; max-width: 432px; background: #222; padding: 15px; border-radius: 12px; margin: 20px 0; box-sizing: border-box; }
-        textarea { width: 100%; height: 60px; background: #333; color: #fff; border: 1px solid #444; font-size: 11px; margin-bottom: 10px; padding: 8px; border-radius: 6px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 12px; }
-        .btn-info { background: #007AFF; } .btn-member { background: #5856D6; } .btn-cap { background: #34c759; grid-column: span 2; margin-top: 5px; }
+        /* --- 操作パネル (lineup.htmlとデザインを統一) --- */
+        .controls { 
+            background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; 
+            width: 95%; max-width: 432px; box-sizing: border-box; 
+            display: flex; flex-direction: column; gap: 10px; 
+        }
+        textarea { 
+            width: 100%; height: 80px; background: #333; color: #ccc; 
+            border: 1px solid #444; border-radius: 8px; padding: 10px; 
+            font-size: 14px; box-sizing: border-box; outline: none;
+        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { 
+            color: white; border: none; padding: 12px 20px; 
+            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; 
+        }
+        .btn-info { background: #007AFF; } 
+        .btn-member { background: #5856D6; } 
+        .btn-photo { background: #34c759; grid-column: span 2; }
 
+        /* --- キャプチャエリア (元の構造・数値を維持) --- */
         #capture-area {
             width: 432px; height: 576px; background: #000;
             display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative;
@@ -35,16 +58,18 @@
         }
         .header-stats { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; }
         .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
-        .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+        .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; color: #fff; }
         #hn { text-align: right; padding-right: 5px; } #an { text-align: left; padding-left: 5px; }
-        .score-n { font-size: 32px; font-weight: 700; text-align: center; width: 85px; }
+        .score-n { font-size: 32px; font-weight: 700; text-align: center; width: 85px; color: #fff; }
         #vi { font-size: 11px; color: #888; font-weight: 500; white-space: pre; height: 14px; overflow: hidden; margin-top: 4px; letter-spacing: -0.02em; }
+
         .grid { display: grid; grid-template-columns: 155px 92px 155px; gap: 0px; margin-top: 4px; justify-content: center; }
         .p-row { height: 16.8px !important; display: flex; align-items: center; background: #000; padding: 0 2px; overflow: hidden; }
         .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; line-height: 16.8px; flex-shrink: 0; }
         .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; line-height: 16.8px; flex-shrink: 0; }
         .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; height: 100%; }
         .p-name { font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; }
+
         .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
         .s-label { font-size: 5.6px; color: #555; font-weight: 400; line-height: 1; text-align: center; }
         .s-vals { display: flex; justify-content: space-around; width: 100%; font-size: 10px; font-weight: 400; line-height: 1; }
@@ -52,6 +77,7 @@
         .c-mini { width: 6px; height: 8px; border-radius: 1px; flex-shrink: 0; }
         .y-mini { background: #FFD700; } .r-mini { background: #FF3B30; }
         .card-num { min-width: 8px; text-align: center; color: #ccc; }
+
         .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; flex: 1; border-top: 1px solid #222; padding-top: 6px; }
         .detail-title { font-size: 7px; color: #007AFF; font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
@@ -63,9 +89,11 @@
         .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; height: 100%; }
         .sub-p { flex: 1; overflow: hidden; white-space: nowrap; text-align: center; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; }
         .arrow { font-size: 6px; color: #333; margin: 0 1px; }
+
         .c-box { width: 7px; height: 9px; border-radius: 1px; background: #000; margin: 0 4px; cursor: pointer; flex-shrink: 0; border: none; }
         .c-box.yellow { background: #FFD700; }
         .c-box.red { background: #FF3B30; }
+
         .ctrls { display: flex; gap: 1px; flex-shrink: 0; height: 100%; align-items: center; }
         .m-btn { background: #222; color: #555; border: none; font-size: 6px; padding: 1px 2px; cursor: pointer; border-radius: 2px; height: 12px; }
         #res img { margin-top: 10px; width: 100%; max-width: 432px; border: 1px solid #444; background: #000; }
@@ -87,12 +115,12 @@
         </div>
     </header>
 
-    <div class="ui-panel">
+    <div class="controls">
         <textarea id="it" placeholder="データを貼り付け"></textarea>
-        <div class="btn-grid">
-            <button class="btn-info" onclick="parseStats()">① 試合・スタッツ解析</button>
-            <button class="btn-member" onclick="parseMember()">② メンバー解析</button>
-            <button class="btn-cap" onclick="takePhoto()">画像出力</button>
+        <div class="btn-group">
+            <button class="btn-info" onclick="parseStats()">1. スタッツ解析</button>
+            <button class="btn-member" onclick="parseMember()">2. メンバー解析</button>
+            <button class="btn-photo" onclick="takePhoto()">3. 画像出力</button>
         </div>
     </div>
 
@@ -105,11 +133,13 @@
             </div>
             <div id="vi" contenteditable="true" oninput="autoShrink(this, 400)">日付 / 会場 / 観客数</div>
         </div>
+
         <div class="grid">
             <div id="hl" class="p-list"></div>
             <div id="sl" class="s-box"></div>
             <div id="al" class="p-list"></div>
         </div>
+
         <div class="detail-section">
             <div class="side-col">
                 <div class="detail-title">GOALS</div><div id="hg-list" class="grid-2col slot-list"></div>
@@ -123,6 +153,7 @@
             </div>
         </div>
     </div>
+
     <div id="res"></div>
 
     <footer>
@@ -131,7 +162,6 @@
     </footer>
 
 <script>
-// ロジックは全て元のコードをそのまま維持
 const STATS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
@@ -234,7 +264,7 @@ function takePhoto() {
     }).then(c => {
         document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
-        res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">【1536×2048 出力完了】画像を長押しして保存</p>';
+        res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">出力完了。画像を長押しして保存してください。</p>';
         const img = new Image();
         img.src = c.toDataURL("image/png", 1.0);
         res.appendChild(img);
