@@ -175,17 +175,10 @@ function toHalfWidth(str) {
     }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
 }
 
+// 指示に従い、チーム名と同じ「サイズを下げて枠に収める」ロジックのみに修正
 function autoShrink(el, maxW, baseSize = 11) {
-    let minSize = baseSize * 0.7; 
-    if (el.id === 'vi') minSize = 9.5; 
     let size = baseSize; el.style.fontSize = size + "px";
-    el.style.letterSpacing = "0px";
-    
-    if (el.scrollWidth > maxW) {
-        el.style.letterSpacing = "-0.5px";
-    }
-    
-    while (el.scrollWidth > maxW && size > minSize) { 
+    while (el.scrollWidth > maxW && size > 7) { 
         size -= 0.1; el.style.fontSize = size + "px"; 
     }
     return size;
@@ -233,11 +226,13 @@ function init() {
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
     ['h', 'a'].forEach(s => {
-        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div></div>`).join('');
+        // GOALS
+        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true"></div></div>`).join('');
         
+        // SUB
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
-                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div>
+                <div class="sub-time" contenteditable="true"></div>
                 <div class="sub-names">
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div>
                     <span class="arrow ${i === 5 ? 'off' : ''}" onclick="toggleArrow(this)">→</span>
@@ -245,7 +240,8 @@ function init() {
                 </div>
             </div>`).join('');
             
-        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div></div>`).join('');
+        // CARDS
+        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div></div>`).join('');
     });
 }
 
