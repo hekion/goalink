@@ -118,7 +118,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="データを貼り付け"></textarea>
+        <textarea id="it" placeholder="各種データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-member" onclick="parseMember()">1. メンバー解析</button>
             <button class="btn-info" onclick="parseStats()">2. スタッツ解析</button>
@@ -175,7 +175,6 @@ function toHalfWidth(str) {
     }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
 }
 
-// 指示に従い、チーム名と同じ「サイズを下げて枠に収める」ロジックのみに修正
 function autoShrink(el, maxW, baseSize = 11) {
     let size = baseSize; el.style.fontSize = size + "px";
     while (el.scrollWidth > maxW && size > 7) { 
@@ -200,20 +199,20 @@ function syncTeamSize() {
 }
 
 function togglePos(el) { el.innerText = POS_L[(POS_L.indexOf(el.innerText) + 1) % POS_L.length]; }
-
 function moveTeam(btn) {
     const row = btn.closest('.p-row');
     document.getElementById(row.parentElement.id === 'hl' ? 'al' : 'hl').appendChild(row);
 }
-
 function moveUpDown(btn, dir) {
     const row = btn.closest('.p-row'), p = row.parentElement;
     if (dir === 'U' && row.previousElementSibling) p.insertBefore(row, row.previousElementSibling);
     if (dir === 'D' && row.nextElementSibling) p.insertBefore(row, row.nextElementSibling.nextElementSibling);
 }
-
-function toggleArrow(el) {
-    el.classList.toggle('off');
+function toggleArrow(el) { el.classList.toggle('off'); }
+function toggleCard(el) {
+    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
+    else if (el.classList.contains('red')) { el.classList.remove('red'); }
+    else { el.classList.add('yellow'); }
 }
 
 function init() {
@@ -226,13 +225,15 @@ function init() {
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
     ['h', 'a'].forEach(s => {
-        // GOALS
-        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true"></div></div>`).join('');
+        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `
+            <div class="slot">
+                <div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div>
+                <div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div>
+            </div>`).join('');
         
-        // SUB
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
-                <div class="sub-time" contenteditable="true"></div>
+                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div>
                 <div class="sub-names">
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div>
                     <span class="arrow ${i === 5 ? 'off' : ''}" onclick="toggleArrow(this)">→</span>
@@ -240,15 +241,13 @@ function init() {
                 </div>
             </div>`).join('');
             
-        // CARDS
-        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div></div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `
+            <div class="slot">
+                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div>
+                <div class="c-box" onclick="toggleCard(this)"></div>
+                <div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div>
+            </div>`).join('');
     });
-}
-
-function toggleCard(el) {
-    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
-    else if (el.classList.contains('red')) { el.classList.remove('red'); }
-    else { el.classList.add('yellow'); }
 }
 
 function parseStats() {
