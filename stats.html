@@ -162,11 +162,11 @@
     </footer>
 
 <script>
-const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
+const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
 const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
-// 指定4箇所のみに使用する半角化関数
+// 指定された文字列内の全角英数字・記号を半角に変換する
 function toHalfWidth(str) {
     if(!str) return "";
     return str.replace(/[！-～]/g, function(s) {
@@ -229,9 +229,10 @@ function toggleCard(el) {
 }
 
 function parseStats() {
-    const rawInput = document.getElementById('it').value;
-    const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
+    const itValue = document.getElementById('it').value;
+    const lines = itValue.split('\n').map(l => l.trim()).filter(l => l);
 
+    // 1. チーム名抽出 (成功版ロジック)
     let foundTeams = [];
     for(let line of lines) {
         let cleanLine = line.replace(/^(.+)\1$/, '$1'); 
@@ -248,6 +249,7 @@ function parseStats() {
         syncTeamSize();
     }
 
+    // 2. スコア抽出 (半角化適用)
     let hScore = "0", aScore = "0";
     const halfIndex = lines.findIndex(l => l.includes("前半"));
     if (halfIndex !== -1) {
@@ -260,19 +262,20 @@ function parseStats() {
     sc.innerText = toHalfWidth(`${hScore}-${aScore}`);
     autoShrink(sc, 85, 32);
 
-    let dateStr = "", stadiumStr = "", audienceStr = "";
-    lines.forEach((line) => {
-        if (line.match(/\d{4}年\d+月\d+日/)) dateStr = toHalfWidth(line);
-        if (line.includes("入場者数")) audienceStr = toHalfWidth(line.replace("入場者数", "観客:"));
-    });
-
-    const stadiumM = rawInput.match(/KO\s*\n\s*([^\n]+)/) || rawInput.match(/スタジアム\t([^\n]+)/) || rawInput.match(/スタジアム\s+([^\n]+)/);
-    if (stadiumM) stadiumStr = toHalfWidth(stadiumM[1].trim());
-
+    // 3. 試合情報 (半角化適用)
+    const dateM = itValue.match(/\d{4}年\d+月\d+日.*KO/);
+    const stadiumM = itValue.match(/KO\s*\n\s*(.*)/) || itValue.match(/スタジアム\t(.*)/) || itValue.match(/スタジアム\s+(.*)/);
+    const audM = itValue.match(/入場者数[\s\t]+([\d,]+人)/);
     const vi = document.getElementById('vi');
-    vi.innerText = `${dateStr} / ${stadiumStr} / ${audienceStr}`;
+    
+    let datePart = dateM ? toHalfWidth(dateM[0]) : '';
+    let stadiumPart = stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : '';
+    let audPart = audM ? toHalfWidth('観客:' + audM[1]) : '';
+    
+    vi.innerText = `${datePart} / ${stadiumPart} / ${audPart}`;
     autoShrink(vi, 400);
 
+    // 4. スタッツ数値
     const statsMap = {"SH": 1, "CK": 7, "FK": 8};
     lines.forEach(line => {
         const m = line.match(/(\d+)(SH|CK|FK)(\d+)/);
