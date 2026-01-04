@@ -69,8 +69,7 @@
         .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; line-height: 16.8px; flex-shrink: 0; }
         .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; line-height: 16.8px; flex-shrink: 0; }
         .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; height: 100%; }
-        /* widthをmax-widthに変更して縮小検知を可能に */
-        .p-name { display: inline-block; max-width: 95px; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
+        .p-name { display: inline-block; max-width: 100px; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
 
         .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
         .s-label { font-size: 5.6px; color: #555; font-weight: 400; line-height: 1; text-align: center; }
@@ -85,13 +84,12 @@
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .slot { height: 13.5px !important; display: flex; align-items: center; overflow: hidden; }
-        /* widthをmax-widthに変更して縮小検知を可能に */
-        .g-name { display: inline-block; max-width: 50px; flex: 1; text-align: center; overflow: hidden; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; letter-spacing: 0; }
-        .g-time { width: 30px; color: #fff; font-size: 6.5px; text-align: right; margin-left: 2px; flex-shrink: 0; font-weight: 300; line-height: 13.5px; }
-        .sub-time { width: 18px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: left; font-weight: 300; line-height: 13.5px; }
+        /* 時間のフォントと色を調整。名前枠を優先 */
+        .g-name { display: inline-block; max-width: 65px; flex: 1; text-align: center; overflow: hidden; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; letter-spacing: 0; }
+        .g-time { width: 30px; color: #fff; font-family: 'Noto Sans JP', sans-serif; font-size: 6.5px; text-align: right; margin-left: 2px; flex-shrink: 0; font-weight: 300; line-height: 13.5px; overflow: hidden; }
+        .sub-time { width: 18px; color: #fff; font-family: 'Noto Sans JP', sans-serif; font-size: 6.5px; flex-shrink: 0; text-align: left; font-weight: 300; line-height: 13.5px; }
         .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; height: 100%; }
-        /* widthをmax-widthに変更して縮小検知を可能に */
-        .sub-p { display: inline-block; max-width: 62px; flex: 1; overflow: hidden; white-space: nowrap; text-align: center; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; letter-spacing: 0; }
+        .sub-p { display: inline-block; max-width: 65px; flex: 1; overflow: hidden; white-space: nowrap; text-align: center; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; letter-spacing: 0; }
         .arrow { font-size: 6px; color: #fff; margin: 0 1px; cursor: pointer; transition: opacity 0.1s; }
         .arrow.off { color: transparent; }
 
@@ -178,13 +176,14 @@ function toHalfWidth(str) {
     }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
 }
 
-// 豆粒防止（下限7px）と文字サイズリセットを備えたリサイズ関数
+// 判定幅を実寸より2.5px絞り、確実に切れないように修正
 function autoShrink(el, maxW, baseSize = 11) {
-    let minSize = 7; 
+    let minSize = 6.5; 
+    let checkW = maxW - 2.5; 
     if (el.id === 'vi') minSize = 9.5; 
     let size = baseSize; 
-    el.style.fontSize = size + "px"; // 判定前にリセット
-    while (el.scrollWidth > maxW && size > minSize) { 
+    el.style.fontSize = size + "px";
+    while (el.scrollWidth > checkW && size > minSize) { 
         size -= 0.1; el.style.fontSize = size + "px"; 
     }
     return size;
@@ -225,24 +224,23 @@ function init() {
     sH += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div></div></div>`;
     document.getElementById('sl').innerHTML = sH;
 
-    const pRow = `<div class="p-row"><span class="p-pos" onclick="togglePos(this)">GK</span><span class="p-no" contenteditable="true"></span><div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 95, 10.5)"></span></div><div class="ctrls"><button class="m-btn" onclick="moveUpDown(this,'U')">▲</button><button class="m-btn" onclick="moveUpDown(this,'D')">▼</button><button class="m-btn" onclick="moveTeam(this)">◀▶</button></div></div>`;
+    const pRow = `<div class="p-row"><span class="p-pos" onclick="togglePos(this)">GK</span><span class="p-no" contenteditable="true"></span><div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 100, 10.5)"></span></div><div class="ctrls"><button class="m-btn" onclick="moveUpDown(this,'U')">▲</button><button class="m-btn" onclick="moveUpDown(this,'D')">▼</button><button class="m-btn" onclick="moveTeam(this)">◀▶</button></div></div>`;
     document.getElementById('hl').innerHTML = Array(11).fill(pRow).join('');
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
     ['h', 'a'].forEach(s => {
-        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div></div>`).join('');
-        
+        // g-timeにもautoShrinkを適用
+        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 65, 11.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div></div>`).join('');
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
                 <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div>
                 <div class="sub-names">
-                    <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div>
+                    <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 65, 11.5)"></div>
                     <span class="arrow ${i === 5 ? 'off' : ''}" onclick="toggleArrow(this)">→</span>
-                    <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div>
+                    <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 65, 11.5)"></div>
                 </div>
             </div>`).join('');
-            
-        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div></div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 11.5)"></div></div>`).join('');
     });
 }
 
@@ -327,14 +325,17 @@ function parseMember() {
             rows[i].querySelector('.p-pos').innerText = list[i].pos;
             rows[i].querySelector('.p-no').innerText = list[i].no;
             const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name;
-            autoShrink(n, 95, 10.5); 
+            autoShrink(n, 100, 10.5); 
         }
     };
     update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
 
-    // 追加：得点者・交代選手も名前切れ防止を適用
-    document.querySelectorAll('.g-name, .sub-p').forEach(el => {
-        if(el.innerText) autoShrink(el, parseFloat(getComputedStyle(el).maxWidth), 11.5);
+    // 各セクションの名前・時間に対しても一括縮小
+    document.querySelectorAll('.g-name, .sub-p, .g-time').forEach(el => {
+        if(el.innerText) {
+            let mw = parseFloat(getComputedStyle(el).maxWidth) || 65;
+            autoShrink(el, mw, el.classList.contains('g-time') ? 6.5 : 11.5);
+        }
     });
 }
 
