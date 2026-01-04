@@ -68,8 +68,8 @@
         .p-row { height: 16.8px !important; display: flex; align-items: center; background: #000; padding: 0 2px; overflow: hidden; }
         .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; line-height: 16.8px; flex-shrink: 0; }
         .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; line-height: 16.8px; flex-shrink: 0; }
-        .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; height: 100%; }
-        .p-name { display: inline-block; max-width: 105px; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
+        .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; height: 100%; max-width: 105px; }
+        .p-name { display: inline-block; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
 
         .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
         .s-label { font-size: 5.6px; color: #555; font-weight: 400; line-height: 1; text-align: center; }
@@ -178,15 +178,17 @@ function toHalfWidth(str) {
 
 function autoShrink(el, maxW, baseSize) {
     if (!el || !el.innerText) return;
-    let minSize = 6.5; 
-    if (el.id === 'vi') minSize = 9.5;
-    if (!baseSize) baseSize = parseFloat(window.getComputedStyle(el).fontSize);
+    let minSize = 6.0; 
+    if (el.id === 'vi') minSize = 9.0;
     
-    let size = baseSize; 
-    el.style.fontSize = size + "px";
-    // .p-nameなどは親要素のボックス幅(maxW)に対してはみ出ているか判定
-    while (el.offsetWidth > maxW && size > minSize) { 
-        size -= 0.1; el.style.fontSize = size + "px"; 
+    // 一度ベースサイズにリセットしてから判定を開始する
+    el.style.fontSize = baseSize + "px";
+    let size = baseSize;
+    
+    // el.scrollWidth（中身の幅）が指定の枠幅(maxW)を超える限りループ
+    while (el.scrollWidth > maxW && size > minSize) { 
+        size -= 0.1; 
+        el.style.fontSize = size + "px"; 
     }
 }
 
@@ -194,8 +196,8 @@ function syncTeamSize() {
     const h = document.getElementById('hn'), a = document.getElementById('an');
     const calcSize = (el) => {
         let size = 20; el.style.fontSize = size + "px";
-        while (el.scrollWidth > 155 && size > 14) { 
-            size -= 1; el.style.fontSize = size + "px"; 
+        while (el.scrollWidth > 155 && size > 12) { 
+            size -= 0.5; el.style.fontSize = size + "px"; 
         }
         return size;
     };
@@ -326,19 +328,22 @@ function parseMember() {
         for(let i=0; i<11; i++) if(list[i]){
             rows[i].querySelector('.p-pos').innerText = list[i].pos;
             rows[i].querySelector('.p-no').innerText = list[i].no;
-            const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name;
+            const n = rows[i].querySelector('.p-name'); 
+            n.innerText = list[i].name;
+            // 数値を直接指定して確実に縮小させる
             autoShrink(n, 105, 10.5); 
         }
     };
     update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
 
+    // 解析後、描画が確定したタイミングでもう一度全項目をチェック
     setTimeout(() => {
         document.querySelectorAll('.p-name').forEach(el => autoShrink(el, 105, 10.5));
         document.querySelectorAll('.g-name').forEach(el => autoShrink(el, 50, 11.5));
         document.querySelectorAll('.sub-p').forEach(el => autoShrink(el, 62, 11.5));
         document.querySelectorAll('.g-time').forEach(el => autoShrink(el, 30, 6.5));
         document.querySelectorAll('.sub-time').forEach(el => autoShrink(el, 18, 6.5));
-    }, 50);
+    }, 100);
 }
 
 function takePhoto() {
