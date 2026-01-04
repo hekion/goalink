@@ -58,16 +58,9 @@
         }
         .header-stats { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; }
         .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
-        
-        /* チーム名エリア：横幅固定とtransformの基準点を修正 */
-        .team-n { 
-            font-size: 20px; font-weight: 700; white-space: nowrap; 
-            color: #fff; width: 155px; display: inline-block; 
-            overflow: visible; /* 圧縮時に文字が消えないように */
-        }
-        #hn { text-align: right; transform-origin: right center; } 
-        #an { text-align: left; transform-origin: left center; }
-
+        .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: visible; color: #fff; width: 155px; }
+        #hn { text-align: right; } 
+        #an { text-align: left; }
         .score-n { font-size: 32px; font-weight: 700; text-align: center; width: 85px; color: #fff; }
         #vi { font-size: 11px; color: #888; font-weight: 500; white-space: pre; height: 14px; overflow: hidden; margin-top: 4px; letter-spacing: -0.02em; }
 
@@ -124,7 +117,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="[修正済み] データを貼り付け"></textarea>
+        <textarea id="it" placeholder="[チーム名判定 修正済み] データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-info" onclick="parseStats()">1. スタッツ解析</button>
             <button class="btn-member" onclick="parseMember()">2. メンバー解析</button>
@@ -191,23 +184,20 @@ function autoShrink(el, maxW, baseSize = 11) {
     return size;
 }
 
-// チーム名専用：長体(横幅圧縮)を適用して豆粒化を防ぐ
+// チーム名：左右でフォントサイズを同期させる処理
 function syncTeamSize() {
     const h = document.getElementById('hn'), a = document.getElementById('an');
-    [h, a].forEach(el => {
-        el.style.fontSize = "20px";
-        el.style.transform = "scaleX(1)";
-        let scrollW = el.scrollWidth;
-        if (scrollW > 155) {
-            let ratio = 155 / scrollW;
-            // 圧縮しすぎを避けるための微調整
-            if (ratio < 0.7) {
-                el.style.fontSize = "18px";
-                ratio = 155 / el.scrollWidth;
-            }
-            el.style.transform = `scaleX(${ratio})`;
+    const calcSize = (el) => {
+        let size = 20; el.style.fontSize = size + "px";
+        while (el.scrollWidth > 155 && size > 14) { 
+            size -= 1; el.style.fontSize = size + "px"; 
         }
-    });
+        return size;
+    };
+    const hSize = calcSize(h);
+    const aSize = calcSize(a);
+    const finalSize = Math.min(hSize, aSize);
+    h.style.fontSize = a.style.fontSize = finalSize + "px";
 }
 
 function togglePos(el) { el.innerText = POS_L[(POS_L.indexOf(el.innerText) + 1) % POS_L.length]; }
