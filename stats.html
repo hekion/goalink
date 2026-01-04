@@ -118,7 +118,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="各種データを貼り付け"></textarea>
+        <textarea id="it" placeholder="データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-member" onclick="parseMember()">1. メンバー解析</button>
             <button class="btn-info" onclick="parseStats()">2. スタッツ解析</button>
@@ -175,12 +175,24 @@ function toHalfWidth(str) {
     }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
 }
 
+// 7pxを下限とする豆粒防止を適用
 function autoShrink(el, maxW, baseSize = 11) {
+    let minSize = 7; 
+    if (el.id === 'vi') minSize = 9.5; 
     let size = baseSize; el.style.fontSize = size + "px";
-    while (el.scrollWidth > maxW && size > 7) { 
+    while (el.scrollWidth > maxW && size > minSize) { 
         size -= 0.1; el.style.fontSize = size + "px"; 
     }
     return size;
+}
+
+// 解析直後に全サイズを調整する命令
+function triggerAllShrink() {
+    document.querySelectorAll('[oninput*="autoShrink"]').forEach(el => {
+        const match = el.getAttribute('oninput').match(/autoShrink\(this,\s*(\d+),\s*([\d.]+)\)/);
+        if (match) autoShrink(el, parseInt(match[1]), parseFloat(match[2]));
+    });
+    syncTeamSize();
 }
 
 function syncTeamSize() {
@@ -192,27 +204,25 @@ function syncTeamSize() {
         }
         return size;
     };
-    const hSize = calcSize(h);
-    const aSize = calcSize(a);
-    const finalSize = Math.min(hSize, aSize);
+    const finalSize = Math.min(calcSize(h), calcSize(a));
     h.style.fontSize = a.style.fontSize = finalSize + "px";
 }
 
 function togglePos(el) { el.innerText = POS_L[(POS_L.indexOf(el.innerText) + 1) % POS_L.length]; }
+
 function moveTeam(btn) {
     const row = btn.closest('.p-row');
     document.getElementById(row.parentElement.id === 'hl' ? 'al' : 'hl').appendChild(row);
 }
+
 function moveUpDown(btn, dir) {
     const row = btn.closest('.p-row'), p = row.parentElement;
     if (dir === 'U' && row.previousElementSibling) p.insertBefore(row, row.previousElementSibling);
     if (dir === 'D' && row.nextElementSibling) p.insertBefore(row, row.nextElementSibling.nextElementSibling);
 }
-function toggleArrow(el) { el.classList.toggle('off'); }
-function toggleCard(el) {
-    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
-    else if (el.classList.contains('red')) { el.classList.remove('red'); }
-    else { el.classList.add('yellow'); }
+
+function toggleArrow(el) {
+    el.classList.toggle('off');
 }
 
 function init() {
@@ -225,11 +235,7 @@ function init() {
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
     ['h', 'a'].forEach(s => {
-        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `
-            <div class="slot">
-                <div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div>
-                <div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div>
-            </div>`).join('');
+        document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div></div>`).join('');
         
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
@@ -241,13 +247,14 @@ function init() {
                 </div>
             </div>`).join('');
             
-        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `
-            <div class="slot">
-                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div>
-                <div class="c-box" onclick="toggleCard(this)"></div>
-                <div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div>
-            </div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div></div>`).join('');
     });
+}
+
+function toggleCard(el) {
+    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
+    else if (el.classList.contains('red')) { el.classList.remove('red'); }
+    else { el.classList.add('yellow'); }
 }
 
 function parseStats() {
@@ -280,7 +287,6 @@ function parseStats() {
 
     document.getElementById('hn').innerText = hName;
     document.getElementById('an').innerText = aName;
-    syncTeamSize();
 
     let hScore = "0", aScore = "0";
     const halfIndex = lines.findIndex(l => l.includes("前半"));
@@ -290,16 +296,12 @@ function parseStats() {
             if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; }
         }
     }
-    const sc = document.getElementById('sc');
-    sc.innerText = toHalfWidth(`${hScore}-${aScore}`);
-    autoShrink(sc, 85, 32);
+    document.getElementById('sc').innerText = toHalfWidth(`${hScore}-${aScore}`);
 
     const dateM = rawInput.match(/\d{4}年\d+月\d+日.*KO/);
     const stadiumM = rawInput.match(/KO\s*\n\s*(.*)/) || rawInput.match(/スタジアム\t(.*)/) || rawInput.match(/スタジアム\s+(.*)/);
     const audM = rawInput.match(/入場者数[\s\t]+([\d,]+人)/);
-    const vi = document.getElementById('vi');
-    vi.innerText = `${dateM ? toHalfWidth(dateM[0]) : ''} / ${stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : ''} / ${audM ? toHalfWidth('観客:' + audM[1]) : ''}`;
-    autoShrink(vi, 400);
+    document.getElementById('vi').innerText = `${dateM ? toHalfWidth(dateM[0]) : ''} / ${stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : ''} / ${audM ? toHalfWidth('観客:' + audM[1]) : ''}`;
 
     const statsMap = {"SH": 1, "CK": 7, "FK": 8};
     lines.forEach(line => {
@@ -311,6 +313,8 @@ function parseStats() {
             inputs[1].innerText = m[3];
         }
     });
+    // 解析後にサイズを一括反映
+    triggerAllShrink();
 }
 
 function parseMember() {
@@ -329,11 +333,12 @@ function parseMember() {
         for(let i=0; i<11; i++) if(list[i]){
             rows[i].querySelector('.p-pos').innerText = list[i].pos;
             rows[i].querySelector('.p-no').innerText = list[i].no;
-            const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name;
-            autoShrink(n, 95, 10.5);
+            rows[i].querySelector('.p-name').innerText = list[i].name;
         }
     };
     update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
+    // 解析後にサイズを一括反映
+    triggerAllShrink();
 }
 
 function takePhoto() {
