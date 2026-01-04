@@ -7,98 +7,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 共通ヘッダー・フッター --- */
+        /* --- 基本スタイル --- */
         :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; }
         body { background-color: var(--bg-black); color: #fff; font-family: 'Noto Sans JP', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         
-        header { 
-            background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1);
-            width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0;
-            display: flex; justify-content: center;
-        }
+        header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
         .header-inner { width: 100%; max-width: 600px; text-align: center; }
         .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; }
         nav { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
-        .nav-link { 
-            font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; 
-            padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); 
-            text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1;
-        }
+        .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
         
-        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
-        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
-        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
-
         /* --- 操作パネル --- */
-        .controls { 
-            background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; 
-            width: 95%; max-width: 432px; box-sizing: border-box; 
-            display: flex; flex-direction: column; gap: 10px; 
-        }
-        textarea { 
-            width: 100%; height: 80px; background: #333; color: #ccc; 
-            border: 1px solid #444; border-radius: 8px; padding: 10px; 
-            font-size: 14px; box-sizing: border-box; outline: none;
-        }
+        .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 432px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { 
-            color: white; border: none; padding: 12px 20px; 
-            border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; 
-        }
+        button { color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .btn-member { background: #5856D6; } 
         .btn-info { background: #007AFF; } 
         .btn-photo { background: #34c759; grid-column: span 2; }
 
         /* --- キャプチャエリア --- */
-        #capture-area {
-            width: 432px; height: 576px; background: #000;
-            display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative;
-            -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
-        }
+        #capture-area { width: 432px; height: 576px; background: #000; display: flex; flex-direction: column; padding: 12px; box-sizing: border-box; position: relative; -webkit-font-smoothing: antialiased; }
         .header-stats { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; }
         .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
-        .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: visible; color: #fff; width: 155px; }
-        #hn { text-align: right; } 
-        #an { text-align: left; }
+        .team-n { font-size: 20px; font-weight: 700; color: #fff; width: 155px; white-space: nowrap; overflow: hidden; }
+        #hn { text-align: right; } #an { text-align: left; }
         .score-n { font-size: 32px; font-weight: 700; text-align: center; width: 85px; color: #fff; }
-        #vi { font-size: 11px; color: #888; font-weight: 500; white-space: pre; height: 14px; overflow: hidden; margin-top: 4px; letter-spacing: -0.02em; }
+        #vi { font-size: 11px; color: #888; margin-top: 4px; white-space: pre; overflow: hidden; height: 14px; }
 
+        /* --- 選手リスト --- */
         .grid { display: grid; grid-template-columns: 155px 92px 155px; gap: 0px; margin-top: 4px; justify-content: center; }
-        .p-row { height: 16.8px !important; display: flex; align-items: center; background: #000; padding: 0 2px; overflow: hidden; }
-        .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; line-height: 16.8px; flex-shrink: 0; }
-        .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; line-height: 16.8px; flex-shrink: 0; }
-        .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; height: 100%; }
-        .p-name { font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
+        .p-row { height: 16.8px; display: flex; align-items: center; background: #000; padding: 0 2px; }
+        .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; }
+        .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; }
+        .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; }
+        .p-name { font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; }
 
+        /* --- スタッツ --- */
         .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
-        .s-label { font-size: 5.6px; color: #555; font-weight: 400; line-height: 1; text-align: center; }
-        .s-vals { display: flex; justify-content: space-around; width: 100%; font-size: 10px; font-weight: 400; line-height: 1; }
+        .s-label { font-size: 5.6px; color: #555; text-align: center; }
+        .s-vals { display: flex; justify-content: space-around; width: 100%; font-size: 10px; }
         .card-vals { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; font-size: 9px; }
-        .c-mini { width: 6px; height: 8px; border-radius: 1px; flex-shrink: 0; }
+        .c-mini { width: 6px; height: 8px; border-radius: 1px; }
         .y-mini { background: #FFD700; } .r-mini { background: #FF3B30; }
-        .card-num { min-width: 8px; text-align: center; color: #ccc; }
 
+        /* --- 詳細セクション --- */
         .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; flex: 1; border-top: 1px solid #222; padding-top: 6px; }
         .detail-title { font-size: 7px; color: var(--main-cyan); font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .slot { height: 13.5px !important; display: flex; align-items: center; overflow: hidden; }
-        .g-name { flex: 1; text-align: center; overflow: hidden; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; letter-spacing: 0; }
-        .g-time { width: 30px; color: #fff; font-size: 6.5px; text-align: right; margin-left: 2px; flex-shrink: 0; font-weight: 300; line-height: 13.5px; }
-        .sub-time { width: 18px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: left; font-weight: 300; line-height: 13.5px; }
-        .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; height: 100%; }
-        .sub-p { flex: 1; overflow: hidden; white-space: nowrap; text-align: center; font-size: 11.5px; font-weight: 600; color: #fff; line-height: 13.5px; letter-spacing: 0; }
-        .arrow { font-size: 6px; color: #fff; margin: 0 1px; cursor: pointer; transition: opacity 0.1s; }
+        .slot { height: 13.5px; display: flex; align-items: center; overflow: hidden; }
+        .g-name { flex: 1; text-align: center; font-size: 11.5px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; }
+        .g-time { width: 30px; color: #fff; font-size: 6.5px; text-align: right; font-weight: 300; white-space: nowrap; overflow: hidden; }
+        .sub-time { width: 18px; color: #fff; font-size: 6.5px; text-align: left; font-weight: 300; }
+        .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; }
+        .sub-p { flex: 1; text-align: center; font-size: 11.5px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; }
+        .arrow { font-size: 6px; color: #fff; margin: 0 1px; cursor: pointer; }
         .arrow.off { color: transparent; }
+        .c-box { width: 7px; height: 9px; border-radius: 1px; background: #000; margin: 0 4px; cursor: pointer; }
+        .c-box.yellow { background: #FFD700; } .c-box.red { background: #FF3B30; }
 
-        .c-box { width: 7px; height: 9px; border-radius: 1px; background: #000; margin: 0 4px; cursor: pointer; flex-shrink: 0; border: none; }
-        .c-box.yellow { background: #FFD700; }
-        .c-box.red { background: #FF3B30; }
-
-        .ctrls { display: flex; gap: 1px; flex-shrink: 0; height: 100%; align-items: center; }
+        .ctrls { display: flex; gap: 1px; align-items: center; }
         .m-btn { background: #222; color: #555; border: none; font-size: 6px; padding: 1px 2px; cursor: pointer; border-radius: 2px; height: 12px; }
-        #res img { margin-top: 10px; width: 100%; max-width: 432px; border: 1px solid #444; background: #000; }
+        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; color: #888; }
     </style>
 </head>
 <body>
@@ -118,7 +91,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="データを貼り付け"></textarea>
+        <textarea id="it" placeholder="各種データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-member" onclick="parseMember()">1. メンバー解析</button>
             <button class="btn-info" onclick="parseStats()">2. スタッツ解析</button>
@@ -158,202 +131,155 @@
 
     <div id="res"></div>
 
-    <footer>
-        <div class="footer-copy">&copy; Goalink</div>
-        <div class="footer-powered">powered by HEKION</div>
-    </footer>
+    <footer><div class="footer-copy">&copy; Goalink</div></footer>
 
 <script>
+let homePlayers = [], awayPlayers = [];
 const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
-const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
-function toHalfWidth(str) {
-    if(!str) return "";
-    return str.replace(/[！-～]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
-}
+function toHalfWidth(str) { return str ? str.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/　/g, ' ') : ""; }
 
 function autoShrink(el, maxW, baseSize = 11) {
-    let minSize = baseSize * 0.7; 
-    if (el.id === 'vi') minSize = 9.5; 
-    let size = baseSize; el.style.fontSize = size + "px";
-    el.style.letterSpacing = "0px";
-    
-    if (el.scrollWidth > maxW) {
-        el.style.letterSpacing = "-0.5px";
-    }
-    
-    while (el.scrollWidth > maxW && size > minSize) { 
-        size -= 0.1; el.style.fontSize = size + "px"; 
-    }
+    let size = baseSize; el.style.fontSize = size + "px"; el.style.letterSpacing = "0px";
+    if (el.scrollWidth > maxW) el.style.letterSpacing = "-0.5px";
+    while (el.scrollWidth > maxW && size > 7) { size -= 0.1; el.style.fontSize = size + "px"; }
     return size;
 }
 
 function syncTeamSize() {
     const h = document.getElementById('hn'), a = document.getElementById('an');
-    const calcSize = (el) => {
-        let size = 20; el.style.fontSize = size + "px";
-        while (el.scrollWidth > 155 && size > 14) { 
-            size -= 1; el.style.fontSize = size + "px"; 
-        }
-        return size;
-    };
-    const hSize = calcSize(h);
-    const aSize = calcSize(a);
-    const finalSize = Math.min(hSize, aSize);
-    h.style.fontSize = a.style.fontSize = finalSize + "px";
-}
-
-function togglePos(el) { el.innerText = POS_L[(POS_L.indexOf(el.innerText) + 1) % POS_L.length]; }
-
-function moveTeam(btn) {
-    const row = btn.closest('.p-row');
-    document.getElementById(row.parentElement.id === 'hl' ? 'al' : 'hl').appendChild(row);
-}
-
-function moveUpDown(btn, dir) {
-    const row = btn.closest('.p-row'), p = row.parentElement;
-    if (dir === 'U' && row.previousElementSibling) p.insertBefore(row, row.previousElementSibling);
-    if (dir === 'D' && row.nextElementSibling) p.insertBefore(row, row.nextElementSibling.nextElementSibling);
-}
-
-function toggleArrow(el) {
-    el.classList.toggle('off');
+    const calc = (el) => { let s = 20; el.style.fontSize = s+"px"; while(el.scrollWidth > 155 && s > 14) { s--; el.style.fontSize = s+"px"; } return s; };
+    const fs = Math.min(calc(h), calc(a)); h.style.fontSize = a.style.fontSize = fs + "px";
 }
 
 function init() {
-    let sH = STATS_LABELS.map(s => `<div class="s-item"><div class="s-label">${s}</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`).join('');
-    sH += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div></div></div>`;
+    const sH = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"].map(s => `<div class="s-item"><div class="s-label">${s}</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`).join('') + `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div></div></div>`;
     document.getElementById('sl').innerHTML = sH;
-
     const pRow = `<div class="p-row"><span class="p-pos" onclick="togglePos(this)">GK</span><span class="p-no" contenteditable="true"></span><div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 95, 10.5)"></span></div><div class="ctrls"><button class="m-btn" onclick="moveUpDown(this,'U')">▲</button><button class="m-btn" onclick="moveUpDown(this,'D')">▼</button><button class="m-btn" onclick="moveTeam(this)">◀▶</button></div></div>`;
     document.getElementById('hl').innerHTML = Array(11).fill(pRow).join('');
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
-   
     ['h', 'a'].forEach(s => {
         document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div></div>`).join('');
-        
-        document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
-            <div class="slot">
-                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div>
-                <div class="sub-names">
-                    <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div>
-                    <span class="arrow ${i === 5 ? 'off' : ''}" onclick="toggleArrow(this)">→</span>
-                    <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div>
-                </div>
-            </div>`).join('');
-            
+        document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div><div class="sub-names"><div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div><span class="arrow ${i===5?'off':''}" onclick="this.classList.toggle('off')">→</span><div class="sub-p" contenteditable="true" oninput="autoShrink(this, 62, 11.5)"></div></div></div>`).join('');
         document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 18, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 48, 11.5)"></div></div>`).join('');
     });
 }
 
-function toggleCard(el) {
-    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
-    else if (el.classList.contains('red')) { el.classList.remove('red'); }
-    else { el.classList.add('yellow'); }
-}
-
-function parseStats() {
-    const rawInput = document.getElementById('it').value;
-    const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
-    const splitIdx = lines.findIndex(l => l.includes("試合終了"));
-    let hName = "HOME", aName = "AWAY";
-
-    const findTeam = (targetLines) => {
-        for (let line of targetLines) {
-            if (line.includes("'") || line.includes("OUT") || line.includes("IN") || line.includes("スタジアム")) continue;
-            let checkLine = toHalfWidth(line);
-            for (let key in TEAM_DICT) {
-                if (checkLine.includes(toHalfWidth(key))) return TEAM_DICT[key];
-            }
-        }
-        return null;
-    };
-
-    if (splitIdx !== -1) {
-        hName = findTeam(lines.slice(0, splitIdx)) || hName;
-        const afterEnd = lines.slice(splitIdx + 1);
-        const scoreEndIdx = afterEnd.findIndex(l => l.includes("前半") || l.includes("後半") || l.includes("SH"));
-        aName = findTeam(afterEnd.slice(scoreEndIdx + 1)) || findTeam(afterEnd) || aName;
-    } else {
-        hName = findTeam(lines) || hName;
-        let secondTeamIdx = lines.findIndex(l => findTeam([l]) === hName);
-        aName = findTeam(lines.slice(secondTeamIdx + 1)) || aName;
-    }
-
-    document.getElementById('hn').innerText = hName;
-    document.getElementById('an').innerText = aName;
-    syncTeamSize();
-
-    let hScore = "0", aScore = "0";
-    const halfIndex = lines.findIndex(l => l.includes("前半"));
-    if (halfIndex !== -1) {
-        hScore = lines[halfIndex - 1].match(/\d+/)?.[0] || "0";
-        for(let i = halfIndex + 1; i < lines.length; i++) {
-            if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; }
-        }
-    }
-    const sc = document.getElementById('sc');
-    sc.innerText = toHalfWidth(`${hScore}-${aScore}`);
-    autoShrink(sc, 85, 32);
-
-    const dateM = rawInput.match(/\d{4}年\d+月\d+日.*KO/);
-    const stadiumM = rawInput.match(/KO\s*\n\s*(.*)/) || rawInput.match(/スタジアム\t(.*)/) || rawInput.match(/スタジアム\s+(.*)/);
-    const audM = rawInput.match(/入場者数[\s\t]+([\d,]+人)/);
-    const vi = document.getElementById('vi');
-    vi.innerText = `${dateM ? toHalfWidth(dateM[0]) : ''} / ${stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : ''} / ${audM ? toHalfWidth('観客:' + audM[1]) : ''}`;
-    autoShrink(vi, 400);
-
-    const statsMap = {"SH": 1, "CK": 7, "FK": 8};
-    lines.forEach(line => {
-        const m = toHalfWidth(line).match(/(\d+)(SH|CK|FK)(\d+)/);
-        if(m) {
-            const idx = statsMap[m[2]];
-            const inputs = document.querySelectorAll('.s-item')[idx].querySelectorAll('span[contenteditable]');
-            inputs[0].innerText = m[1];
-            inputs[1].innerText = m[3];
-        }
-    });
-}
+function toggleCard(el) { if(el.classList.contains('yellow')){el.classList.remove('yellow');el.classList.add('red');}else if(el.classList.contains('red')){el.classList.remove('red');}else{el.classList.add('yellow');} }
+function togglePos(el) { el.innerText = POS_L[(POS_L.indexOf(el.innerText)+1)%POS_L.length]; }
+function moveTeam(btn) { const row = btn.closest('.p-row'); document.getElementById(row.parentElement.id === 'hl' ? 'al' : 'hl').appendChild(row); }
+function moveUpDown(btn, dir) { const row = btn.closest('.p-row'), p = row.parentElement; if (dir==='U'&&row.previousElementSibling) p.insertBefore(row, row.previousElementSibling); if (dir==='D'&&row.nextElementSibling) p.insertBefore(row, row.nextElementSibling.nextElementSibling); }
 
 function parseMember() {
-    const tokens = document.getElementById('it').value.replace(/　/g, " ").split(/\s+/).filter(t => t);
-    let p = []; let lastPos = "GK";
-    for(let i=0; i<tokens.length; i++){
+    const text = toHalfWidth(document.getElementById('it').value);
+    const tokens = text.split(/\s+/).filter(t => t);
+    let p = [], lastPos = "GK";
+    for(let i=0; i<tokens.length; i++) {
         if(POS_L.includes(tokens[i])) { lastPos = tokens[i]; continue; }
         if(!isNaN(tokens[i]) && tokens[i].length <= 3) {
             let no = tokens[i], name = tokens[++i] || "";
-            if(tokens[i+1] && isNaN(tokens[i+1]) && !POS_L.includes(tokens[i+1]) && !tokens[i+1].includes("'")) { name += " " + tokens[++i]; }
-            p.push({pos: lastPos, no: no, name: name});
+            while(tokens[i+1] && isNaN(tokens[i+1]) && !POS_L.includes(tokens[i+1]) && !tokens[i+1].includes("'")) { name += " " + tokens[++i]; }
+            p.push({pos: lastPos, no: no, name: name.trim()});
         }
     }
+    const h = p.filter((_,i)=>i%2===0), a = p.filter((_,i)=>i%2!==0);
+    homePlayers = h.map(x => x.name); awayPlayers = a.map(x => x.name);
     const update = (id, list) => {
         const rows = document.getElementById(id).children;
         for(let i=0; i<11; i++) if(list[i]){
             rows[i].querySelector('.p-pos').innerText = list[i].pos;
             rows[i].querySelector('.p-no').innerText = list[i].no;
-            const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name;
-            autoShrink(n, 95, 10.5);
+            const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name; autoShrink(n, 95, 10.5);
         }
     };
-    update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
+    update('hl', h); update('al', a);
+}
+
+function parseStats() {
+    const raw = toHalfWidth(document.getElementById('it').value);
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+    
+    // 得点・交代・カードの振り分け用カウンター
+    let counters = { hg:0, ag:0, hs:0, as:0, hc:0, ac:0 };
+
+    lines.forEach(line => {
+        // 1. 得点解析 (XX' 選手名)
+        const gMatch = line.match(/^(\d+)'\s+(.+)$/);
+        if(gMatch) {
+            const time = gMatch[1] + "'", name = gMatch[2].trim();
+            const side = homePlayers.includes(name) ? 'h' : (awayPlayers.includes(name) ? 'a' : null);
+            if(side) {
+                const list = document.getElementById(`${side}g-list`).children;
+                let found = false;
+                for(let i=0; i<8; i++) {
+                    const nBox = list[i].querySelector('.g-name');
+                    if(nBox.innerText === name) {
+                        const tBox = list[i].querySelector('.g-time');
+                        tBox.innerText += " " + time; autoShrink(tBox, 30, 6.5);
+                        found = true; break;
+                    }
+                }
+                if(!found && counters[`${side}g`] < 8) {
+                    const slot = list[counters[`${side}g`]++];
+                    slot.querySelector('.g-name').innerText = name;
+                    slot.querySelector('.g-time').innerText = time;
+                    autoShrink(slot.querySelector('.g-name'), 50, 11.5);
+                }
+            }
+            return;
+        }
+
+        // 2. 交代解析 (XX' OUT 選手 IN 選手)
+        const sMatch = line.match(/^(\d+)'\s+OUT\s+(.+?)\s+IN\s+(.+)$/);
+        if(sMatch) {
+            const time = sMatch[1] + "'", outP = sMatch[2].trim(), inP = sMatch[3].trim();
+            const side = homePlayers.includes(outP) || homePlayers.includes(inP) ? 'h' : 'a';
+            if(counters[`${side}s`] < 6) {
+                const slot = document.getElementById(`${side}s-list`).children[counters[`${side}s`]++];
+                slot.querySelector('.sub-time').innerText = time;
+                const names = slot.querySelectorAll('.sub-p');
+                names[0].innerText = outP; names[1].innerText = inP;
+                autoShrink(names[0], 62, 11.5); autoShrink(names[1], 62, 11.5);
+            }
+            return;
+        }
+
+        // 3. カード解析 (XX' 選手名) ※得点・交代に該当しない場合
+        const cMatch = line.match(/^(\d+)'\s+(.+)$/);
+        if(cMatch) {
+            const time = cMatch[1] + "'", name = cMatch[2].trim();
+            const side = homePlayers.includes(name) ? 'h' : 'a';
+            if(counters[`${side}c`] < 8) {
+                const slot = document.getElementById(`${side}c-list`).children[counters[`${side}c`]++];
+                slot.querySelector('.sub-time').innerText = time;
+                slot.querySelector('.g-name').innerText = name;
+                slot.querySelector('.c-box').classList.add('yellow');
+                autoShrink(slot.querySelector('.g-name'), 48, 11.5);
+            }
+        }
+    });
+
+    // チーム名・スコア・基本情報の抽出
+    let hT = "HOME", aT = "AWAY";
+    for(let k in TEAM_DICT) if(raw.includes(k)) { hT = TEAM_DICT[k]; break; }
+    document.getElementById('hn').innerText = hT; syncTeamSize();
+    
+    const scM = raw.match(/(\d+)\s*-\s*(\d+)/);
+    if(scM) { const sc = document.getElementById('sc'); sc.innerText = `${scM[1]}-${scM[2]}`; autoShrink(sc, 85, 32); }
+    
+    const dateM = raw.match(/\d{4}年\d+月\d+日/);
+    if(dateM) { const vi = document.getElementById('vi'); vi.innerText = dateM[0]; autoShrink(vi, 400); }
 }
 
 function takePhoto() {
     const area = document.getElementById('capture-area');
     document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'none');
-    const targetScale = 1536 / area.offsetWidth;
-    html2canvas(area, {
-        scale: targetScale, backgroundColor: '#000', logging: false, useCORS: true, allowTaint: true, width: 432, height: 576
-    }).then(c => {
+    html2canvas(area, { scale: 1536/area.offsetWidth, backgroundColor: '#000' }).then(c => {
         document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
-        res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">出力完了。画像を長押しして保存してください。</p>';
-        const img = new Image();
-        img.src = c.toDataURL("image/png", 1.0);
-        res.appendChild(img);
+        res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">出力完了。画像を長押し保存してください。</p>';
+        const img = new Image(); img.src = c.toDataURL(); res.appendChild(img);
     });
 }
 init();
