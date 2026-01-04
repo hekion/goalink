@@ -118,7 +118,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="データを貼り付け"></textarea>
+        <textarea id="it" placeholder="各種データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-member" onclick="parseMember()">1. メンバー解析</button>
             <button class="btn-info" onclick="parseStats()">2. スタッツ解析</button>
@@ -175,7 +175,7 @@ function toHalfWidth(str) {
     }).replace(/　/g, ' ').replace(/（/g, '(').replace(/）/g, ')');
 }
 
-// 7pxを下限とする豆粒防止を適用
+// 豆粒防止（下限7px）を実装したリサイズ関数
 function autoShrink(el, maxW, baseSize = 11) {
     let minSize = 7; 
     if (el.id === 'vi') minSize = 9.5; 
@@ -186,7 +186,7 @@ function autoShrink(el, maxW, baseSize = 11) {
     return size;
 }
 
-// 解析直後に全サイズを調整する命令
+// 全枠のサイズを強制的に再計算する命令
 function triggerAllShrink() {
     document.querySelectorAll('[oninput*="autoShrink"]').forEach(el => {
         const match = el.getAttribute('oninput').match(/autoShrink\(this,\s*(\d+),\s*([\d.]+)\)/);
@@ -221,8 +221,12 @@ function moveUpDown(btn, dir) {
     if (dir === 'D' && row.nextElementSibling) p.insertBefore(row, row.nextElementSibling.nextElementSibling);
 }
 
-function toggleArrow(el) {
-    el.classList.toggle('off');
+function toggleArrow(el) { el.classList.toggle('off'); }
+
+function toggleCard(el) {
+    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
+    else if (el.classList.contains('red')) { el.classList.remove('red'); }
+    else { el.classList.add('yellow'); }
 }
 
 function init() {
@@ -230,11 +234,13 @@ function init() {
     sH += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div></div></div>`;
     document.getElementById('sl').innerHTML = sH;
 
+    // 選手名枠に手入力対応のoninputを追加
     const pRow = `<div class="p-row"><span class="p-pos" onclick="togglePos(this)">GK</span><span class="p-no" contenteditable="true"></span><div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 95, 10.5)"></span></div><div class="ctrls"><button class="m-btn" onclick="moveUpDown(this,'U')">▲</button><button class="m-btn" onclick="moveUpDown(this,'D')">▼</button><button class="m-btn" onclick="moveTeam(this)">◀▶</button></div></div>`;
     document.getElementById('hl').innerHTML = Array(11).fill(pRow).join('');
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
     ['h', 'a'].forEach(s => {
+        // 得点者、交代名、警告名にも手入力対応のoninputを追加
         document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 50, 11.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div></div>`).join('');
         
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
@@ -251,12 +257,6 @@ function init() {
     });
 }
 
-function toggleCard(el) {
-    if (el.classList.contains('yellow')) { el.classList.remove('yellow'); el.classList.add('red'); }
-    else if (el.classList.contains('red')) { el.classList.remove('red'); }
-    else { el.classList.add('yellow'); }
-}
-
 function parseStats() {
     const rawInput = document.getElementById('it').value;
     const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
@@ -267,9 +267,7 @@ function parseStats() {
         for (let line of targetLines) {
             if (line.includes("'") || line.includes("OUT") || line.includes("IN") || line.includes("スタジアム")) continue;
             let checkLine = toHalfWidth(line);
-            for (let key in TEAM_DICT) {
-                if (checkLine.includes(toHalfWidth(key))) return TEAM_DICT[key];
-            }
+            for (let key in TEAM_DICT) { if (checkLine.includes(toHalfWidth(key))) return TEAM_DICT[key]; }
         }
         return null;
     };
@@ -292,9 +290,7 @@ function parseStats() {
     const halfIndex = lines.findIndex(l => l.includes("前半"));
     if (halfIndex !== -1) {
         hScore = lines[halfIndex - 1].match(/\d+/)?.[0] || "0";
-        for(let i = halfIndex + 1; i < lines.length; i++) {
-            if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; }
-        }
+        for(let i = halfIndex + 1; i < lines.length; i++) { if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; } }
     }
     document.getElementById('sc').innerText = toHalfWidth(`${hScore}-${aScore}`);
 
@@ -309,11 +305,10 @@ function parseStats() {
         if(m) {
             const idx = statsMap[m[2]];
             const inputs = document.querySelectorAll('.s-item')[idx].querySelectorAll('span[contenteditable]');
-            inputs[0].innerText = m[1];
-            inputs[1].innerText = m[3];
+            inputs[0].innerText = m[1]; inputs[1].innerText = m[3];
         }
     });
-    // 解析後にサイズを一括反映
+    // 解析後に自動で全枠のサイズを調整
     triggerAllShrink();
 }
 
@@ -337,7 +332,7 @@ function parseMember() {
         }
     };
     update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
-    // 解析後にサイズを一括反映
+    // 解析後に自動で全枠のサイズを調整
     triggerAllShrink();
 }
 
@@ -351,9 +346,7 @@ function takePhoto() {
         document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
         res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">出力完了。画像を長押しして保存してください。</p>';
-        const img = new Image();
-        img.src = c.toDataURL("image/png", 1.0);
-        res.appendChild(img);
+        const img = new Image(); img.src = c.toDataURL("image/png", 1.0); res.appendChild(img);
     });
 }
 init();
