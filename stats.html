@@ -162,7 +162,7 @@
     </footer>
 
 <script>
-const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
+const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユネットFC", "琉球": "FC琉球"};
 const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
@@ -216,24 +216,55 @@ function toggleCard(el) {
 
 function parseStats() {
     const it = document.getElementById('it').value;
-
-    // チーム名解析と辞書適用
     const lines = it.split('\n').map(l => l.trim()).filter(l => l);
-    const teams = lines.map(l => l.replace(/(浦和|川崎F|鹿島|横浜FM)\1/g, "$1")).filter(l => TEAM_DICT[l]);
-    if(teams.length >= 2) {
-        document.getElementById('hn').innerText = TEAM_DICT[teams[0]];
-        document.getElementById('an').innerText = TEAM_DICT[teams[1]];
+
+    // 1. チーム名抽出 (辞書順で最初に出た異なる2つ)
+    let foundTeams = [];
+    for(let line of lines) {
+        let clean = line.replace(/(浦和|川崎F|鹿島|横浜FM)\1/g, "$1");
+        if(TEAM_DICT[clean] && !foundTeams.includes(TEAM_DICT[clean])) {
+            foundTeams.push(TEAM_DICT[clean]);
+        }
+    }
+    if(foundTeams.length >= 2) {
+        document.getElementById('hn').innerText = foundTeams[0];
+        document.getElementById('an').innerText = foundTeams[1];
         syncTeamSize();
     }
 
-    const scM = it.match(/(\d+)\s*\n\s*\d+前半\d+\s*\n\s*\d+後半\d+\s*\n\s*(\d+)/);
-    if(scM) { const sc = document.getElementById('sc'); sc.innerText = `${scM[1]}-${scM[2]}`; autoShrink(sc, 85, 32); }
+    // 2. スコア抽出 (「数字 前半 数字」を目印に、その直前と数行後を狙う)
+    let hScore = "0", aScore = "0";
+    const halfIndex = lines.findIndex(l => l.includes("前半"));
+    if (halfIndex !== -1) {
+        hScore = lines[halfIndex - 1].match(/\d+/)?.[0] || "0";
+        // 試合終了〜アウェイチーム名の間からアウェイ点を探す
+        for(let i = halfIndex + 1; i < lines.length; i++) {
+            if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; }
+        }
+    }
+    const sc = document.getElementById('sc');
+    sc.innerText = `${hScore}-${aScore}`;
+    autoShrink(sc, 85, 32);
+
+    // 3. 試合情報 (日付・スタジアム・観客)
     const dateM = it.match(/\d{4}年\d+月\d+日.*KO/);
-    const stadiumM = it.match(/KO\n(.*)/);
-    const audM = it.match(/入場者数[\s\t]+([^\n]+)/);
+    const stadiumM = it.match(/KO\n(.*)/) || it.match(/スタジアム\t(.*)/);
+    const audM = it.match(/入場者数[\s\t]+([\d,]+人)/);
     const vi = document.getElementById('vi');
     vi.innerText = `${dateM?dateM[0]:''} / ${stadiumM?stadiumM[1]:''} / ${audM?'観客:'+audM[1]:''}`;
     autoShrink(vi, 400);
+
+    // 4. スタッツ数値 (14SH4 などの形式を解析)
+    const statsMap = {"SH": 1, "CK": 7, "FK": 8}; // ラベルのインデックス
+    lines.forEach(line => {
+        const m = line.match(/(\d+)(SH|CK|FK)(\d+)/);
+        if(m) {
+            const idx = statsMap[m[2]];
+            const inputs = document.querySelectorAll('.s-item')[idx].querySelectorAll('span[contenteditable]');
+            inputs[0].innerText = m[1];
+            inputs[1].innerText = m[3];
+        }
+    });
 }
 
 function parseMember() {
