@@ -116,7 +116,7 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="[適用済み] データを貼り付け"></textarea>
+        <textarea id="it" placeholder="[チーム名判定 修正済み] データを貼り付け"></textarea>
         <div class="btn-group">
             <button class="btn-info" onclick="parseStats()">1. スタッツ解析</button>
             <button class="btn-member" onclick="parseMember()">2. メンバー解析</button>
@@ -228,27 +228,46 @@ function toggleCard(el) {
 }
 
 function parseStats() {
-    const it = document.getElementById('it').value;
-    const lines = it.split('\n').map(l => l.trim()).filter(l => l);
+    const rawInput = document.getElementById('it').value;
+    const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
+    const splitIdx = lines.findIndex(l => l.includes("試合終了"));
 
-    // 1. チーム名抽出 (安定版ロジック)
-    let foundTeams = [];
-    for(let line of lines) {
-        let cleanLine = line.replace(/^(.+)\1$/, '$1'); 
-        for (let key in TEAM_DICT) {
-            if (cleanLine.includes(key) && !foundTeams.includes(TEAM_DICT[key])) {
-                foundTeams.push(TEAM_DICT[key]);
-                break; 
+    let hName = "HOME", aName = "AWAY";
+
+    // チーム名抽出関数 (表記ゆれ対応 & ノイズ排除)
+    const findTeam = (targetLines) => {
+        for (let line of targetLines) {
+            // ノイズ排除: 分(')、交代(OUT/IN)、スタジアム という文字があれば無視
+            if (line.includes("'") || line.includes("OUT") || line.includes("IN") || line.includes("スタジアム")) continue;
+            
+            // 表記ゆれ吸収: 判定用に全角英数を半角化
+            let checkLine = toHalfWidth(line);
+            for (let key in TEAM_DICT) {
+                if (checkLine.includes(toHalfWidth(key))) return TEAM_DICT[key];
             }
         }
-    }
-    if(foundTeams.length >= 2) {
-        document.getElementById('hn').innerText = foundTeams[0];
-        document.getElementById('an').innerText = foundTeams[1];
-        syncTeamSize();
+        return null;
+    };
+
+    // ホームは「試合終了」より上から探す
+    if (splitIdx !== -1) {
+        hName = findTeam(lines.slice(0, splitIdx)) || hName;
+        // アウェーは「試合終了」より下、かつスコアスタッツ行(前半/後半/SH)より後から探す
+        const afterEnd = lines.slice(splitIdx + 1);
+        const scoreEndIdx = afterEnd.findIndex(l => l.includes("前半") || l.includes("後半") || l.includes("SH"));
+        aName = findTeam(afterEnd.slice(scoreEndIdx + 1)) || findTeam(afterEnd) || aName;
+    } else {
+        // 試合終了が見つからない場合は従来通り全体から2つ探す
+        hName = findTeam(lines) || hName;
+        let secondTeamIdx = lines.findIndex(l => findTeam([l]) === hName);
+        aName = findTeam(lines.slice(secondTeamIdx + 1)) || aName;
     }
 
-    // 2. スコア抽出 (半角化適用)
+    document.getElementById('hn').innerText = hName;
+    document.getElementById('an').innerText = aName;
+    syncTeamSize();
+
+    // 2. スコア抽出
     let hScore = "0", aScore = "0";
     const halfIndex = lines.findIndex(l => l.includes("前半"));
     if (halfIndex !== -1) {
@@ -261,23 +280,18 @@ function parseStats() {
     sc.innerText = toHalfWidth(`${hScore}-${aScore}`);
     autoShrink(sc, 85, 32);
 
-    // 3. 試合情報 (半角化適用)
-    const dateM = it.match(/\d{4}年\d+月\d+日.*KO/);
-    const stadiumM = it.match(/KO\s*\n\s*(.*)/) || it.match(/スタジアム\t(.*)/) || it.match(/スタジアム\s+(.*)/);
-    const audM = it.match(/入場者数[\s\t]+([\d,]+人)/);
+    // 3. 試合情報
+    const dateM = rawInput.match(/\d{4}年\d+月\d+日.*KO/);
+    const stadiumM = rawInput.match(/KO\s*\n\s*(.*)/) || rawInput.match(/スタジアム\t(.*)/) || rawInput.match(/スタジアム\s+(.*)/);
+    const audM = rawInput.match(/入場者数[\s\t]+([\d,]+人)/);
     const vi = document.getElementById('vi');
-    
-    let datePart = dateM ? toHalfWidth(dateM[0]) : '';
-    let stadiumPart = stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : '';
-    let audPart = audM ? toHalfWidth('観客:' + audM[1]) : '';
-    
-    vi.innerText = `${datePart} / ${stadiumPart} / ${audPart}`;
+    vi.innerText = `${dateM ? toHalfWidth(dateM[0]) : ''} / ${stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : ''} / ${audM ? toHalfWidth('観客:' + audM[1]) : ''}`;
     autoShrink(vi, 400);
 
     // 4. スタッツ数値
     const statsMap = {"SH": 1, "CK": 7, "FK": 8};
     lines.forEach(line => {
-        const m = line.match(/(\d+)(SH|CK|FK)(\d+)/);
+        const m = toHalfWidth(line).match(/(\d+)(SH|CK|FK)(\d+)/);
         if(m) {
             const idx = statsMap[m[2]];
             const inputs = document.querySelectorAll('.s-item')[idx].querySelectorAll('span[contenteditable]');
@@ -314,15 +328,8 @@ function takePhoto() {
     const area = document.getElementById('capture-area');
     document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'none');
     const targetScale = 1536 / area.offsetWidth;
-
     html2canvas(area, {
-        scale: targetScale,
-        backgroundColor: '#000',
-        logging: false,
-        useCORS: true,
-        allowTaint: true,
-        width: 432,
-        height: 576
+        scale: targetScale, backgroundColor: '#000', logging: false, useCORS: true, allowTaint: true, width: 432, height: 576
     }).then(c => {
         document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
