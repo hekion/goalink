@@ -69,7 +69,7 @@
         .p-pos { width: 18px; font-size: 7px; color: #fff; font-weight: 700; text-align: center; cursor: pointer; line-height: 16.8px; flex-shrink: 0; }
         .p-no { width: 18px; color: #777; font-size: 9px; text-align: center; line-height: 16.8px; flex-shrink: 0; }
         .p-name-box { flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; height: 100%; }
-        .p-name { display: inline-block; max-width: 95px; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
+        .p-name { display: inline-block; max-width: 105px; font-weight: 500; color: #fff; font-size: 10.5px; white-space: nowrap; line-height: 1; letter-spacing: 0; }
 
         .s-item { height: 16.8px; display: flex; flex-direction: column; justify-content: center; background: #000; }
         .s-label { font-size: 5.6px; color: #555; font-weight: 400; line-height: 1; text-align: center; }
@@ -134,7 +134,7 @@
                 <div id="sc" class="score-n" contenteditable="true" oninput="autoShrink(this, 85, 32)">0-0</div>
                 <div id="an" class="team-n" contenteditable="true" oninput="syncTeamSize()">AWAY</div>
             </div>
-            <div id="vi" contenteditable="true" oninput="autoShrink(this, 400)">日付 / 会場 / 観客数</div>
+            <div id="vi" contenteditable="true" oninput="autoShrink(this, 400, 11)">日付 / 会場 / 観客数</div>
         </div>
 
         <div class="grid">
@@ -224,7 +224,7 @@ function init() {
     sH += `<div class="s-item"><div class="s-label">警告＆退場</div><div class="s-vals"><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div><div class="card-vals"><div class="c-mini y-mini"></div><span class="card-num" contenteditable="true">0</span><div class="c-mini r-mini"></div><span class="card-num" contenteditable="true">0</span></div></div></div>`;
     document.getElementById('sl').innerHTML = sH;
 
-    const pRow = `<div class="p-row"><span class="p-pos" onclick="togglePos(this)">GK</span><span class="p-no" contenteditable="true"></span><div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 95, 10.5)"></span></div><div class="ctrls"><button class="m-btn" onclick="moveUpDown(this,'U')">▲</button><button class="m-btn" onclick="moveUpDown(this,'D')">▼</button><button class="m-btn" onclick="moveTeam(this)">◀▶</button></div></div>`;
+    const pRow = `<div class="p-row"><span class="p-pos" onclick="togglePos(this)">GK</span><span class="p-no" contenteditable="true"></span><div class="p-name-box"><span class="p-name" contenteditable="true" oninput="autoShrink(this, 105, 10.5)"></span></div><div class="ctrls"><button class="m-btn" onclick="moveUpDown(this,'U')">▲</button><button class="m-btn" onclick="moveUpDown(this,'D')">▼</button><button class="m-btn" onclick="moveTeam(this)">◀▶</button></div></div>`;
     document.getElementById('hl').innerHTML = Array(11).fill(pRow).join('');
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
@@ -326,13 +326,13 @@ function parseMember() {
             rows[i].querySelector('.p-pos').innerText = list[i].pos;
             rows[i].querySelector('.p-no').innerText = list[i].no;
             const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name;
-            autoShrink(n, 95, 10.5); 
+            autoShrink(n, 105, 10.5); 
         }
     };
     update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
 
     setTimeout(() => {
-        document.querySelectorAll('.p-name').forEach(el => autoShrink(el, 95, 10.5));
+        document.querySelectorAll('.p-name').forEach(el => autoShrink(el, 105, 10.5));
         document.querySelectorAll('.g-name').forEach(el => autoShrink(el, 50, 11.5));
         document.querySelectorAll('.sub-p').forEach(el => autoShrink(el, 62, 11.5));
         document.querySelectorAll('.g-time').forEach(el => autoShrink(el, 30, 6.5));
