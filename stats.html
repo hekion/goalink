@@ -184,7 +184,8 @@ function autoShrink(el, maxW, baseSize) {
     
     let size = baseSize; 
     el.style.fontSize = size + "px";
-    while (el.scrollWidth > (maxW - 0.5) && size > minSize) { 
+    // .p-nameなどは親要素のボックス幅(maxW)に対してはみ出ているか判定
+    while (el.offsetWidth > maxW && size > minSize) { 
         size -= 0.1; el.style.fontSize = size + "px"; 
     }
 }
