@@ -46,8 +46,8 @@
             color: white; border: none; padding: 12px 20px; 
             border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; 
         }
-        .btn-info { background: #007AFF; } 
         .btn-member { background: #5856D6; } 
+        .btn-info { background: #007AFF; } 
         .btn-photo { background: #34c759; grid-column: span 2; }
 
         /* --- キャプチャエリア --- */
@@ -80,7 +80,6 @@
         .card-num { min-width: 8px; text-align: center; color: #ccc; }
 
         .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; flex: 1; border-top: 1px solid #222; padding-top: 6px; }
-        /* タイトル文字色を水色に変更 */
         .detail-title { font-size: 7px; color: var(--main-cyan); font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
@@ -118,10 +117,10 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="[チーム名判定 修正済み] データを貼り付け"></textarea>
+        <textarea id="it" placeholder="データを貼り付け"></textarea>
         <div class="btn-group">
-            <button class="btn-info" onclick="parseStats()">1. スタッツ解析</button>
-            <button class="btn-member" onclick="parseMember()">2. メンバー解析</button>
+            <button class="btn-member" onclick="parseMember()">1. メンバー解析</button>
+            <button class="btn-info" onclick="parseStats()">2. スタッツ解析</button>
             <button class="btn-photo" onclick="takePhoto()">3. 画像出力</button>
         </div>
     </div>
@@ -185,7 +184,6 @@ function autoShrink(el, maxW, baseSize = 11) {
     return size;
 }
 
-// チーム名：左右でフォントサイズを同期させる処理
 function syncTeamSize() {
     const h = document.getElementById('hn'), a = document.getElementById('an');
     const calcSize = (el) => {
