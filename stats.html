@@ -30,7 +30,7 @@
         .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
         .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
 
-        /* --- 操作パネル (横並びボタンに修正) --- */
+        /* --- 操作パネル (lineup.htmlとデザインを統一) --- */
         .controls { 
             background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; 
             width: 95%; max-width: 432px; box-sizing: border-box; 
@@ -47,7 +47,8 @@
             border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; 
         }
         .btn-info { background: #007AFF; } 
-        .btn-photo { background: #34c759; }
+        .btn-member { background: #5856D6; } 
+        .btn-photo { background: #34c759; grid-column: span 2; }
 
         /* --- キャプチャエリア (元の構造・数値を維持) --- */
         #capture-area {
@@ -117,8 +118,9 @@
     <div class="controls">
         <textarea id="it" placeholder="データを貼り付け"></textarea>
         <div class="btn-group">
-            <button class="btn-info" onclick="runFullParse()">1. 全解析実行</button>
-            <button class="btn-photo" onclick="takePhoto()">2. 画像出力</button>
+            <button class="btn-info" onclick="parseStats()">1. スタッツ解析</button>
+            <button class="btn-member" onclick="parseMember()">2. メンバー解析</button>
+            <button class="btn-photo" onclick="takePhoto()">3. 画像出力</button>
         </div>
     </div>
 
@@ -212,13 +214,10 @@ function toggleCard(el) {
     else { el.classList.add('yellow'); }
 }
 
-function runFullParse() {
-    parseStats();
-    parseMember();
-}
-
 function parseStats() {
     const it = document.getElementById('it').value;
+
+    // チーム名解析と辞書適用
     const lines = it.split('\n').map(l => l.trim()).filter(l => l);
     const teams = lines.map(l => l.replace(/(浦和|川崎F|鹿島|横浜FM)\1/g, "$1")).filter(l => TEAM_DICT[l]);
     if(teams.length >= 2) {
@@ -226,6 +225,7 @@ function parseStats() {
         document.getElementById('an').innerText = TEAM_DICT[teams[1]];
         syncTeamSize();
     }
+
     const scM = it.match(/(\d+)\s*\n\s*\d+前半\d+\s*\n\s*\d+後半\d+\s*\n\s*(\d+)/);
     if(scM) { const sc = document.getElementById('sc'); sc.innerText = `${scM[1]}-${scM[2]}`; autoShrink(sc, 85, 32); }
     const dateM = it.match(/\d{4}年\d+月\d+日.*KO/);
@@ -263,6 +263,7 @@ function takePhoto() {
     const area = document.getElementById('capture-area');
     document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'none');
     const targetScale = 1536 / area.offsetWidth;
+
     html2canvas(area, {
         scale: targetScale,
         backgroundColor: '#000',
