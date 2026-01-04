@@ -166,9 +166,16 @@ const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿
 const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
+// autoShrinkを豆粒化しないように改良（最低サイズを保障）
 function autoShrink(el, maxW, baseSize = 11) {
+    let minSize = baseSize * 0.75; // 元の75%より小さくしない
+    if (el.id === 'vi') minSize = 9; // 試合情報は9pxまで
+    if (el.classList.contains('team-n')) minSize = 14; // チーム名は14pxまで
+
     let size = baseSize; el.style.fontSize = size + "px";
-    while (el.scrollWidth > maxW && size > 4) { size -= 0.1; el.style.fontSize = size + "px"; }
+    while (el.scrollWidth > maxW && size > minSize) { 
+        size -= 0.2; el.style.fontSize = size + "px"; 
+    }
     return size;
 }
 
@@ -215,21 +222,18 @@ function toggleCard(el) {
 }
 
 function parseStats() {
-    const it = document.getElementById('it').value.replace(/Ｆ/g, "F");
+    // 全角Fを半角に、重複を正規表現で一括処理
+    let it = document.getElementById('it').value.replace(/Ｆ/g, "F");
     const lines = it.split('\n').map(l => l.trim()).filter(l => l);
 
-    // 1. チーム名抽出 (重複除去ロジックを強化)
+    // 1. チーム名抽出 (重複除去ロジックを全チームに適用)
     let foundTeams = [];
     for(let line of lines) {
-        // 重複を除去 (例: 浦和レッズ浦和レッズ -> 浦和レッズ)
-        let mid = Math.floor(line.length / 2);
-        if (line.length > 0 && line.length % 2 === 0 && line.substring(0, mid) === line.substring(mid)) {
-            line = line.substring(0, mid);
-        }
+        // 同じ言葉が2回連続している場合は1つにする (例: 浦和レッズ浦和レッズ -> 浦和レッズ)
+        let processedLine = line.replace(/^(.+)\1$/, '$1');
 
-        // 辞書のキーが含まれているかチェック
         for (let key in TEAM_DICT) {
-            if (line.includes(key) && !foundTeams.includes(TEAM_DICT[key])) {
+            if (processedLine.includes(key) && !foundTeams.includes(TEAM_DICT[key])) {
                 foundTeams.push(TEAM_DICT[key]);
                 break; 
             }
@@ -256,10 +260,10 @@ function parseStats() {
 
     // 3. 試合情報
     const dateM = it.match(/\d{4}年\d+月\d+日.*KO/);
-    const stadiumM = it.match(/KO\n(.*)/) || it.match(/スタジアム\t(.*)/);
+    const stadiumM = it.match(/KO\s*\n\s*(.*)/) || it.match(/スタジアム\t(.*)/) || it.match(/埼玉スタジアム[０-９２]*/);
     const audM = it.match(/入場者数[\s\t]+([\d,]+人)/);
     const vi = document.getElementById('vi');
-    vi.innerText = `${dateM?dateM[0]:''} / ${stadiumM?stadiumM[1]:''} / ${audM?'観客:'+audM[1]:''}`;
+    vi.innerText = `${dateM?dateM[0]:''} / ${stadiumM? (typeof stadiumM[1] !== 'undefined' ? stadiumM[1] : stadiumM[0]) :''} / ${audM?'観客:'+audM[1]:''}`;
     autoShrink(vi, 400);
 
     // 4. スタッツ数値
@@ -316,7 +320,7 @@ function takePhoto() {
         const res = document.getElementById('res');
         res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">出力完了。画像を長押しして保存してください。</p>';
         const img = new Image();
-        img.src = c.toClarity ? c.toDataURL("image/png", 1.0) : c.toDataURL("image/png");
+        img.src = c.toDataURL("image/png", 1.0);
         res.appendChild(img);
     });
 }
