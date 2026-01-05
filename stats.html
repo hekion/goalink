@@ -83,10 +83,13 @@
         .detail-title { font-size: 7px; color: var(--main-cyan); font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        
         .slot { height: 13.5px !important; display: flex; align-items: center; overflow: hidden; gap: 2px; }
         .g-name { width: 60px; text-align: center; overflow: hidden; white-space: nowrap; font-size: 8.5px; font-weight: 500; color: #fff; line-height: 13.5px; letter-spacing: 0; flex-shrink: 0; }
         .g-time { width: 28px; color: #fff; font-size: 6.5px; text-align: center; flex-shrink: 0; font-weight: 300; line-height: 13.5px; white-space: nowrap; }
-        .sub-time { width: 28px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: center; font-weight: 300; line-height: 13.5px; white-space: nowrap; }
+        
+        /* デザインを維持したまま、時間の端が切れないよう調整 */
+        .sub-time { width: 30px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: center; font-weight: 300; line-height: 13.5px; white-space: nowrap; outline: none; }
         .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; height: 100%; }
         .sub-p { width: 60px; overflow: hidden; white-space: nowrap; text-align: center; font-size: 8.5px; font-weight: 500; color: #fff; line-height: 13.5px; letter-spacing: 0; flex-shrink: 0; }
         .arrow { font-size: 10.5px; color: #fff; margin: 0 10px; cursor: pointer; transition: opacity 0.1s; font-weight: bold; }
@@ -224,14 +227,14 @@ function init() {
         document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div></div>`).join('');
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
-                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div>
+                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div>
                 <div class="sub-names">
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div>
                     <span class="arrow ${i === 5 ? 'off' : ''}" onclick="toggleArrow(this)">→</span>
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div>
                 </div>
             </div>`).join('');
-        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div></div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div></div>`).join('');
     });
 }
 
@@ -296,7 +299,6 @@ function parseStats() {
         }
     });
 
-    // --- 詳細解析: 得点者 ---
     const awayAppearIdx = lines.findIndex((l, i) => i > splitIdx && aShort && l.includes(aShort));
     const progStartIdx = lines.findIndex(l => l.includes("試合経過"));
     const goalSection = lines.slice(awayAppearIdx !== -1 ? awayAppearIdx : splitIdx + 1, progStartIdx !== -1 ? progStartIdx : undefined);
@@ -315,14 +317,11 @@ function parseStats() {
         }
     });
 
-    // --- 詳細解析: 警告・交代 (完全修正版) ---
     const progLines = progStartIdx !== -1 ? lines.slice(progStartIdx + 1) : [];
     let hSubs = [], aSubs = [], hCards = [], aCards = [];
 
-    // 特定のインデックス周辺で時間情報を探す補助関数
     const findNearestTime = (idx) => {
         for (let offset = 0; offset <= 3; offset++) {
-            // 上下交互に探す
             for (let dir of [-1, 1]) {
                 const checkIdx = idx + (offset * dir);
                 if (progLines[checkIdx]) {
@@ -335,7 +334,6 @@ function parseStats() {
     };
 
     progLines.forEach((l, i) => {
-        // --- 交代判定 ---
         if(l.includes("OUT")) {
             const subTime = findNearestTime(i);
             const outP = l.replace(/.*OUT/, "").trim();
@@ -346,22 +344,16 @@ function parseStats() {
             else if(aNames.some(an => outP.includes(an))) aSubs.push(subObj);
             return;
         }
-
-        // --- 警告判定 (時間の行、INの行、ノイズは無視) ---
         const tM = l.match(/(\d+[\+\d]*\*?')/);
         if(tM || l.includes("IN") || l.includes("試合") || l.includes("DAZN")) return;
-
         const cleanName = l.trim();
         if(cleanName.length >= 2 && !cleanName.match(/^\d+$/)) {
             const isH = hNames.some(hn => cleanName.includes(hn));
             const isA = aNames.some(an => cleanName.includes(an));
-            
             if(isH || isA) {
                 const cardTime = findNearestTime(i);
-                // 得点者リストと時間+名前が完全に一致する場合は除外
                 const isGoalEvent = [...hGoalData, ...aGoalData].some(g => g.name.includes(cleanName) && g.time === cardTime);
                 if(isGoalEvent) return;
-
                 const cardObj = {time: cardTime, name: cleanName};
                 if(isH) hCards.push(cardObj); else aCards.push(cardObj);
             }
