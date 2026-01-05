@@ -290,17 +290,42 @@ function parseStats() {
         }
     });
 
-    // --- 自動抽出ロジック (GOALS/SUBS/CARDS) ---
+    // --- 自動抽出アップデート (判定ロジック強化) ---
     const statsStartIdx = lines.findIndex(l => l.match(/^\d+SH/));
     const scorerSection = lines.slice(splitIdx + 1, statsStartIdx !== -1 ? statsStartIdx : undefined);
     let hGoalData = [], aGoalData = [];
-    let currentSide = 'home';
+    let curSide = 'home';
     scorerSection.forEach(l => {
-        if(l.includes(aName)) currentSide = 'away';
+        if(l.includes(aName)) curSide = 'away';
         const m = l.match(/(\d+[\+\d]*'*)\s*(.+)/);
         if(m) {
             const time = m[1].replace(/\*/g, ''), name = m[2].trim();
-            if(currentSide === 'home') hGoalData.push({time, name}); else aGoalData.push({time, name});
+            if(curSide === 'home') hGoalData.push({time, name}); else aGoalData.push({time, name});
+        }
+    });
+
+    const progStart = lines.findIndex(l => l.includes("試合経過"));
+    const progLines = progStart !== -1 ? lines.slice(progStart + 1) : [];
+    let hSubs = [], aSubs = [], hCards = [], aCards = [];
+    let lastTime = "";
+    const allGoalNames = [...hGoalData, ...aGoalData].map(g => g.name);
+    const noise = ["みどころ", "戦評", "メンバー予想", "フォーメーション速報", "スタジアム", "入場者数", "試合終了"];
+
+    progLines.forEach((l, i) => {
+        const fullLine = document.getElementById('it').value.split('\n').filter(lx=>lx.trim())[progStart + 1 + i] || "";
+        const isAwayLine = fullLine.startsWith('\t') || fullLine.startsWith('    '); 
+
+        const tM = l.match(/(\d+[\+\d]*'*)/);
+        if(tM) lastTime = tM[1].replace(/\*/g, '');
+        
+        if(l.includes("OUT")) {
+            const inLine = progLines[i+1] || "";
+            const outP = l.replace("OUT", "").trim();
+            const inP = inLine.includes("IN") ? inLine.replace("IN", "").trim() : "";
+            if(isAwayLine) aSubs.push({time: lastTime, out: outP, in: inP}); else hSubs.push({time: lastTime, out: outP, in: inP});
+        } else if(lastTime && l.match(/^[^\d'A-Z]{2,}/) && !allGoalNames.includes(l.trim()) && !l.includes("IN") && !noise.some(n => l.includes(n))) {
+            const name = l.trim();
+            if(isAwayLine) aCards.push({time: lastTime, name}); else hCards.push({time: lastTime, name});
         }
     });
 
@@ -313,30 +338,9 @@ function parseStats() {
         return res;
     };
 
-    const progStart = lines.findIndex(l => l.includes("試合経過"));
-    const progLines = progStart !== -1 ? lines.slice(progStart + 1) : [];
-    let hSubs = [], aSubs = [], hCards = [], aCards = [];
-    let lastTime = "";
-    const allGoalNames = [...hGoalData, ...aGoalData].map(g => g.name);
-
-    progLines.forEach((l, i) => {
-        const tM = l.match(/(\d+[\+\d]*'*)/);
-        if(tM) lastTime = tM[1].replace(/\*/g, '');
-        if(l.includes("OUT")) {
-            const inLine = progLines[i+1] || "";
-            const outP = l.replace("OUT", "").trim();
-            const inP = inLine.includes("IN") ? inLine.replace("IN", "").trim() : "";
-            if(l.includes('\t') || l.startsWith(' ')) aSubs.push({time: lastTime, out: outP, in: inP});
-            else hSubs.push({time: lastTime, out: outP, in: inP});
-        } else if(lastTime && l.match(/^[^\d'A-Z]{2,}/) && !allGoalNames.includes(l.trim()) && !l.includes("試合")) {
-            const name = l.trim();
-            if(l.includes('\t') || l.startsWith(' ')) aCards.push({time: lastTime, name});
-            else hCards.push({time: lastTime, name});
-        }
-    });
-
     const fillSlots = (side, type, data) => {
         const slots = document.getElementById(`${side}${type}-list`).querySelectorAll('.slot');
+        slots.forEach(s => { s.querySelectorAll('[contenteditable]').forEach(e => e.innerText = ""); s.querySelectorAll('.c-box').forEach(b => b.classList.remove('yellow','red')); });
         data.forEach((d, i) => {
             if(!slots[i]) return;
             if(type === 'g') {
