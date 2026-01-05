@@ -243,24 +243,27 @@ function toggleCard(el) {
 
 function parseStats() {
     const rawInput = toHalfWidth(document.getElementById('it').value);
-    const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
+    const noisePatterns = ["みどころ", "戦評", "メンバー予想", "フォーメーション", "スタジアム", "入場者数", "公式記録", "チケット", "試合情報"];
+    const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l && !noisePatterns.some(n => l.includes(n)));
+    
     const splitIdx = lines.findIndex(l => l.includes("試合終了"));
     let hName = "HOME", aName = "AWAY";
 
-    const findTeam = (targetLines) => {
+    const findTeamShort = (targetLines) => {
         for (let line of targetLines) {
-            if (line.includes("'") || line.includes("OUT") || line.includes("IN") || line.includes("スタジアム")) continue;
-            for (let key in TEAM_DICT) { if (line.includes(key)) return TEAM_DICT[key]; }
+            for (let key in TEAM_DICT) { if (line.includes(key)) return key; }
         }
         return null;
     };
 
-    if (splitIdx !== -1) {
-        hName = findTeam(lines.slice(0, splitIdx)) || hName;
-        const afterEnd = lines.slice(splitIdx + 1);
-        const scoreEndIdx = afterEnd.findIndex(l => l.includes("前半") || l.includes("後半") || l.includes("SH"));
-        aName = findTeam(afterEnd.slice(scoreEndIdx + 1)) || findTeam(afterEnd) || aName;
-    }
+    const hShort = findTeamShort(lines.slice(0, splitIdx));
+    if (hShort) hName = TEAM_DICT[hShort];
+    
+    const afterEnd = lines.slice(splitIdx + 1);
+    const scoreSectionEndIdx = afterEnd.findIndex(l => l.includes("前半") || l.includes("後半") || l.match(/^\d+SH/));
+    const aShort = findTeamShort(afterEnd.slice(scoreSectionEndIdx !== -1 ? scoreSectionEndIdx : 0)) || findTeamShort(afterEnd);
+    if (aShort) aName = TEAM_DICT[aShort];
+
     document.getElementById('hn').innerText = hName;
     document.getElementById('an').innerText = aName;
     syncTeamSize();
@@ -268,7 +271,7 @@ function parseStats() {
     let hScore = "0", aScore = "0";
     const halfIndex = lines.findIndex(l => l.includes("前半"));
     if (halfIndex !== -1) {
-        hScore = lines[halfIndex - 1].match(/\d+/)?.[0] || "0";
+        hScore = lines[halfIndex - 1].match(/^\d+$/)?.[0] || "0";
         for(let i = halfIndex + 1; i < lines.length; i++) { if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; } }
     }
     const sc = document.getElementById('sc'); sc.innerText = `${hScore}-${aScore}`; autoShrink(sc, 85, 32);
@@ -282,7 +285,7 @@ function parseStats() {
 
     const statsMap = {"SH": 1, "CK": 7, "FK": 8};
     lines.forEach(line => {
-        const m = toHalfWidth(line).match(/(\d+)(SH|CK|FK)(\d+)/);
+        const m = line.match(/(\d+)(SH|CK|FK)(\d+)/);
         if(m) {
             const idx = statsMap[m[2]];
             const inputs = document.querySelectorAll('.s-item')[idx].querySelectorAll('span[contenteditable]');
@@ -290,42 +293,52 @@ function parseStats() {
         }
     });
 
-    // --- 自動抽出アップデート (判定ロジック強化) ---
+    // --- 詳細解析ロジック (得点者と時間の混入防止) ---
     const statsStartIdx = lines.findIndex(l => l.match(/^\d+SH/));
     const scorerSection = lines.slice(splitIdx + 1, statsStartIdx !== -1 ? statsStartIdx : undefined);
     let hGoalData = [], aGoalData = [];
-    let curSide = 'home';
+    let curGoalSide = 'home';
+
     scorerSection.forEach(l => {
-        if(l.includes(aName)) curSide = 'away';
+        if(l.includes("前半") || l.includes("後半")) return; // 前半1 などの行を無視
+        if(aShort && l.includes(aShort)) curGoalSide = 'away';
+        // 「45' 選手名」のような形式を優先して抽出
         const m = l.match(/(\d+[\+\d]*'*)\s*(.+)/);
-        if(m) {
-            const time = m[1].replace(/\*/g, ''), name = m[2].trim();
-            if(curSide === 'home') hGoalData.push({time, name}); else aGoalData.push({time, name});
+        if(m && m[2].length > 1) { 
+            const time = m[1].replace(/\*/g, '');
+            const name = m[2].trim();
+            if(!name.match(/^\d+$/)) { // 名前が数字だけのものは除外
+                if(curGoalSide === 'home') hGoalData.push({time, name}); else aGoalData.push({time, name});
+            }
         }
     });
 
     const progStart = lines.findIndex(l => l.includes("試合経過"));
     const progLines = progStart !== -1 ? lines.slice(progStart + 1) : [];
     let hSubs = [], aSubs = [], hCards = [], aCards = [];
-    let lastTime = "";
+    let lastTime = "", curProgSide = 'home';
     const allGoalNames = [...hGoalData, ...aGoalData].map(g => g.name);
-    const noise = ["みどころ", "戦評", "メンバー予想", "フォーメーション速報", "スタジアム", "入場者数", "試合終了"];
 
     progLines.forEach((l, i) => {
-        const fullLine = document.getElementById('it').value.split('\n').filter(lx=>lx.trim())[progStart + 1 + i] || "";
-        const isAwayLine = fullLine.startsWith('\t') || fullLine.startsWith('    '); 
+        if(aShort && l.includes(aShort)) curProgSide = 'away';
+        if(hShort && l.includes(hShort)) curProgSide = 'home';
 
         const tM = l.match(/(\d+[\+\d]*'*)/);
-        if(tM) lastTime = tM[1].replace(/\*/g, '');
-        
+        if(tM) {
+            lastTime = tM[1].replace(/\*/g, '');
+            const nextL = progLines[i+1] || "";
+            // 次の行が名前であることを判定（IN/OUT/数字を含まない）
+            if(nextL && !nextL.includes("IN") && !nextL.includes("OUT") && !nextL.match(/^\d+/) && !allGoalNames.includes(nextL)) {
+                if(curProgSide === 'home') hCards.push({time: lastTime, name: nextL});
+                else aCards.push({time: lastTime, name: nextL});
+            }
+        }
         if(l.includes("OUT")) {
-            const inLine = progLines[i+1] || "";
             const outP = l.replace("OUT", "").trim();
+            const inLine = progLines[i+1] || "";
             const inP = inLine.includes("IN") ? inLine.replace("IN", "").trim() : "";
-            if(isAwayLine) aSubs.push({time: lastTime, out: outP, in: inP}); else hSubs.push({time: lastTime, out: outP, in: inP});
-        } else if(lastTime && l.match(/^[^\d'A-Z]{2,}/) && !allGoalNames.includes(l.trim()) && !l.includes("IN") && !noise.some(n => l.includes(n))) {
-            const name = l.trim();
-            if(isAwayLine) aCards.push({time: lastTime, name}); else hCards.push({time: lastTime, name});
+            if(curProgSide === 'home') hSubs.push({time: lastTime, out: outP, in: inP});
+            else aSubs.push({time: lastTime, out: outP, in: inP});
         }
     });
 
@@ -340,7 +353,10 @@ function parseStats() {
 
     const fillSlots = (side, type, data) => {
         const slots = document.getElementById(`${side}${type}-list`).querySelectorAll('.slot');
-        slots.forEach(s => { s.querySelectorAll('[contenteditable]').forEach(e => e.innerText = ""); s.querySelectorAll('.c-box').forEach(b => b.classList.remove('yellow','red')); });
+        slots.forEach(s => { 
+            s.querySelectorAll('[contenteditable]').forEach(e => e.innerText = ""); 
+            s.querySelectorAll('.c-box').forEach(b => b.classList.remove('yellow','red')); 
+        });
         data.forEach((d, i) => {
             if(!slots[i]) return;
             if(type === 'g') {
