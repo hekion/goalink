@@ -9,7 +9,11 @@
     <style>
         /* --- 共通ヘッダー・フッター --- */
         :root { --main-cyan: #4bb8e0; --bg-black: #0c0c0c; }
-        body { background-color: var(--bg-black); color: #fff; font-family: 'Noto Sans JP', sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        body { 
+            background-color: var(--bg-black); color: #fff; font-family: 'Noto Sans JP', sans-serif; 
+            margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            overflow-x: hidden; /* 画面全体の横揺れ（突き抜け）を防止 */
+        }
         
         header { 
             background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -55,6 +59,7 @@
             width: 432px; height: 576px; background: #000;
             display: flex; flex-direction: column; padding: 12px 0; box-sizing: border-box; position: relative;
             -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+            margin: 0 auto; /* 中央に配置し、左端が切れるのを防ぐ */
         }
         .header-stats { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; padding-left: 8px; padding-right: 8px; }
         .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
@@ -87,8 +92,9 @@
             margin-top: 8px; 
             flex: 1; 
             border-top: 1px solid #222; 
-            padding: 8px 12px 0 12px; /* 左右にしっかり余白を作り、文字が壁に突き抜けるのを防ぐ */
-            box-sizing: border-box;    /* 432pxの中にpaddingを含める */
+            padding: 8px 15px 0 15px; /* 左右の余白を少し増やして、端の文字を安全圏へ入れる */
+            box-sizing: border-box;
+            overflow: hidden;         /* 枠外への突き抜けを物理的にカット */
         }
         .detail-title { font-size: 7px; color: var(--main-cyan); font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
@@ -176,7 +182,7 @@
     </footer>
 
 <script>
-const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
+const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユネットSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
 const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
