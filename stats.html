@@ -53,10 +53,10 @@
         /* --- キャプチャエリア --- */
         #capture-area {
             width: 432px; height: 576px; background: #000;
-            display: flex; flex-direction: column; padding: 12px 8px; box-sizing: border-box; position: relative;
+            display: flex; flex-direction: column; padding: 12px 0; box-sizing: border-box; position: relative;
             -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
         }
-        .header-stats { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; }
+        .header-stats { text-align: center; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 4px; padding-left: 8px; padding-right: 8px; }
         .score-row { display: grid; grid-template-columns: 1fr 85px 1fr; align-items: center; }
         .team-n { font-size: 20px; font-weight: 700; white-space: nowrap; overflow: visible; color: #fff; width: 155px; }
         #hn { text-align: right; } 
@@ -79,20 +79,29 @@
         .y-mini { background: #FFD700; } .r-mini { background: #FF3B30; }
         .card-num { min-width: 8px; text-align: center; color: #ccc; }
 
-        .detail-section { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; flex: 1; border-top: 1px solid #222; padding-top: 6px; }
+        /* --- 下部詳細セクションの修正 --- */
+        .detail-section { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            margin-top: 8px; 
+            flex: 1; 
+            border-top: 1px solid #222; 
+            padding: 8px 12px 0 12px; /* 左右にしっかり余白を作り、文字が壁に突き抜けるのを防ぐ */
+            box-sizing: border-box;    /* 432pxの中にpaddingを含める */
+        }
         .detail-title { font-size: 7px; color: var(--main-cyan); font-weight: 700; margin-bottom: 3px; letter-spacing: 0.5px; }
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
-        .slot { height: 13.5px !important; display: flex; align-items: center; overflow: hidden; gap: 2px; }
+        .slot { height: 13.5px !important; display: flex; align-items: center; overflow: visible; gap: 3px; }
         .g-name { width: 60px; text-align: center; overflow: hidden; white-space: nowrap; font-size: 8.5px; font-weight: 500; color: #fff; line-height: 13.5px; letter-spacing: 0; flex-shrink: 0; }
         .g-time { width: 28px; color: #fff; font-size: 6.5px; text-align: center; flex-shrink: 0; font-weight: 300; line-height: 13.5px; white-space: nowrap; }
         
-        /* デザインを維持したまま、時間の端が切れないよう調整 */
-        .sub-time { width: 30px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: center; font-weight: 300; line-height: 13.5px; white-space: nowrap; outline: none; }
+        .sub-time { width: 28px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: center; font-weight: 300; line-height: 13.5px; white-space: nowrap; outline: none; }
         .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; height: 100%; }
         .sub-p { width: 60px; overflow: hidden; white-space: nowrap; text-align: center; font-size: 8.5px; font-weight: 500; color: #fff; line-height: 13.5px; letter-spacing: 0; flex-shrink: 0; }
-        .arrow { font-size: 10.5px; color: #fff; margin: 0 10px; cursor: pointer; transition: opacity 0.1s; font-weight: bold; }
+        .arrow { font-size: 10.5px; color: #fff; margin: 0 8px; cursor: pointer; transition: opacity 0.1s; font-weight: bold; }
         .arrow.off { color: transparent; }
 
         .c-box { width: 7px; height: 9px; border-radius: 1px; background: #000; margin: 0 2px; cursor: pointer; flex-shrink: 0; border: none; }
@@ -227,14 +236,14 @@ function init() {
         document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div></div>`).join('');
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
-                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div>
+                <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div>
                 <div class="sub-names">
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div>
                     <span class="arrow ${i === 5 ? 'off' : ''}" onclick="toggleArrow(this)">→</span>
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div>
                 </div>
             </div>`).join('');
-        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 30, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div></div>`).join('');
+        document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div></div>`).join('');
     });
 }
 
