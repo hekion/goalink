@@ -84,14 +84,11 @@
         .slot-list { display: flex; flex-direction: column; gap: 2px; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .slot { height: 13.5px !important; display: flex; align-items: center; overflow: hidden; gap: 2px; }
-        /* 基準サイズを8.5pxに、ウェイトを500に統一 */
         .g-name { width: 60px; text-align: center; overflow: hidden; white-space: nowrap; font-size: 8.5px; font-weight: 500; color: #fff; line-height: 13.5px; letter-spacing: 0; flex-shrink: 0; }
-        /* 改行防止のnowrapを追加 */
         .g-time { width: 28px; color: #fff; font-size: 6.5px; text-align: center; flex-shrink: 0; font-weight: 300; line-height: 13.5px; white-space: nowrap; }
         .sub-time { width: 28px; color: #fff; font-size: 6.5px; flex-shrink: 0; text-align: center; font-weight: 300; line-height: 13.5px; white-space: nowrap; }
         .sub-names { flex: 1; display: flex; align-items: center; gap: 2px; overflow: hidden; height: 100%; }
         .sub-p { width: 60px; overflow: hidden; white-space: nowrap; text-align: center; font-size: 8.5px; font-weight: 500; color: #fff; line-height: 13.5px; letter-spacing: 0; flex-shrink: 0; }
-        /* 矢印周りに10pxずつの余白を追加 */
         .arrow { font-size: 10.5px; color: #fff; margin: 0 10px; cursor: pointer; transition: opacity 0.1s; font-weight: bold; }
         .arrow.off { color: transparent; }
 
@@ -183,14 +180,8 @@ function autoShrink(el, maxW, baseSize = 11) {
     if (el.id === 'vi') minSize = 9.5; 
     let size = baseSize; el.style.fontSize = size + "px";
     el.style.letterSpacing = "0px";
-    
-    if (el.scrollWidth > maxW) {
-        el.style.letterSpacing = "-0.5px";
-    }
-    
-    while (el.scrollWidth > maxW && size > minSize) { 
-        size -= 0.1; el.style.fontSize = size + "px"; 
-    }
+    if (el.scrollWidth > maxW) el.style.letterSpacing = "-0.5px";
+    while (el.scrollWidth > maxW && size > minSize) { size -= 0.1; el.style.fontSize = size + "px"; }
     return size;
 }
 
@@ -198,14 +189,10 @@ function syncTeamSize() {
     const h = document.getElementById('hn'), a = document.getElementById('an');
     const calcSize = (el) => {
         let size = 20; el.style.fontSize = size + "px";
-        while (el.scrollWidth > 155 && size > 14) { 
-            size -= 1; el.style.fontSize = size + "px"; 
-        }
+        while (el.scrollWidth > 155 && size > 14) { size -= 1; el.style.fontSize = size + "px"; }
         return size;
     };
-    const hSize = calcSize(h);
-    const aSize = calcSize(a);
-    const finalSize = Math.min(hSize, aSize);
+    const finalSize = Math.min(calcSize(h), calcSize(a));
     h.style.fontSize = a.style.fontSize = finalSize + "px";
 }
 
@@ -222,9 +209,7 @@ function moveUpDown(btn, dir) {
     if (dir === 'D' && row.nextElementSibling) p.insertBefore(row, row.nextElementSibling.nextElementSibling);
 }
 
-function toggleArrow(el) {
-    el.classList.toggle('off');
-}
+function toggleArrow(el) { el.classList.toggle('off'); }
 
 function init() {
     let sH = STATS_LABELS.map(s => `<div class="s-item"><div class="s-label">${s}</div><div class="s-vals"><span contenteditable="true">0</span><span contenteditable="true">0</span></div></div>`).join('');
@@ -236,9 +221,7 @@ function init() {
     document.getElementById('al').innerHTML = Array(11).fill(pRow).join('');
    
     ['h', 'a'].forEach(s => {
-        // 名前基準8.5px
         document.getElementById(`${s}g-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div><div class="g-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div></div>`).join('');
-        
         document.getElementById(`${s}s-list`).innerHTML = Array(6).fill(0).map((_, i) => `
             <div class="slot">
                 <div class="sub-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div>
@@ -248,7 +231,6 @@ function init() {
                     <div class="sub-p" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div>
                 </div>
             </div>`).join('');
-            
         document.getElementById(`${s}c-list`).innerHTML = Array(8).fill(0).map(() => `<div class="slot"><div class="sub-time" contenteditable="true" oninput="autoShrink(this, 28, 6.5)"></div><div class="c-box" onclick="toggleCard(this)"></div><div class="g-name" contenteditable="true" oninput="autoShrink(this, 60, 8.5)"></div></div>`).join('');
     });
 }
@@ -260,7 +242,7 @@ function toggleCard(el) {
 }
 
 function parseStats() {
-    const rawInput = document.getElementById('it').value;
+    const rawInput = toHalfWidth(document.getElementById('it').value);
     const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l);
     const splitIdx = lines.findIndex(l => l.includes("試合終了"));
     let hName = "HOME", aName = "AWAY";
@@ -268,10 +250,7 @@ function parseStats() {
     const findTeam = (targetLines) => {
         for (let line of targetLines) {
             if (line.includes("'") || line.includes("OUT") || line.includes("IN") || line.includes("スタジアム")) continue;
-            let checkLine = toHalfWidth(line);
-            for (let key in TEAM_DICT) {
-                if (checkLine.includes(toHalfWidth(key))) return TEAM_DICT[key];
-            }
+            for (let key in TEAM_DICT) { if (line.includes(key)) return TEAM_DICT[key]; }
         }
         return null;
     };
@@ -281,12 +260,7 @@ function parseStats() {
         const afterEnd = lines.slice(splitIdx + 1);
         const scoreEndIdx = afterEnd.findIndex(l => l.includes("前半") || l.includes("後半") || l.includes("SH"));
         aName = findTeam(afterEnd.slice(scoreEndIdx + 1)) || findTeam(afterEnd) || aName;
-    } else {
-        hName = findTeam(lines) || hName;
-        let secondTeamIdx = lines.findIndex(l => findTeam([l]) === hName);
-        aName = findTeam(lines.slice(secondTeamIdx + 1)) || aName;
     }
-
     document.getElementById('hn').innerText = hName;
     document.getElementById('an').innerText = aName;
     syncTeamSize();
@@ -295,19 +269,15 @@ function parseStats() {
     const halfIndex = lines.findIndex(l => l.includes("前半"));
     if (halfIndex !== -1) {
         hScore = lines[halfIndex - 1].match(/\d+/)?.[0] || "0";
-        for(let i = halfIndex + 1; i < lines.length; i++) {
-            if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; }
-        }
+        for(let i = halfIndex + 1; i < lines.length; i++) { if(lines[i].match(/^\d+$/)) { aScore = lines[i]; break; } }
     }
-    const sc = document.getElementById('sc');
-    sc.innerText = toHalfWidth(`${hScore}-${aScore}`);
-    autoShrink(sc, 85, 32);
+    const sc = document.getElementById('sc'); sc.innerText = `${hScore}-${aScore}`; autoShrink(sc, 85, 32);
 
-    const dateM = rawInput.match(/\d{4}年\d+月\d+日.*KO/);
-    const stadiumM = rawInput.match(/KO\s*\n\s*(.*)/) || rawInput.match(/スタジアム\t(.*)/) || rawInput.match(/スタジアム\s+(.*)/);
+    const stadiumM = rawInput.match(/KO\s*\n\s*(.*)/) || rawInput.match(/スタジアム\s+([^\n\t]+)/);
     const audM = rawInput.match(/入場者数[\s\t]+([\d,]+人)/);
+    const dateM = rawInput.match(/\d{4}年\d+月\d+日/);
     const vi = document.getElementById('vi');
-    vi.innerText = `${dateM ? toHalfWidth(dateM[0]) : ''} / ${stadiumM ? toHalfWidth(stadiumM[1] || stadiumM[0]) : ''} / ${audM ? toHalfWidth('観客:' + audM[1]) : ''}`;
+    vi.innerText = `${dateM ? dateM[0] : ''} / ${stadiumM ? stadiumM[1].trim() : ''} / ${audM ? '観客:' + audM[1] : ''}`;
     autoShrink(vi, 400);
 
     const statsMap = {"SH": 1, "CK": 7, "FK": 8};
@@ -316,10 +286,77 @@ function parseStats() {
         if(m) {
             const idx = statsMap[m[2]];
             const inputs = document.querySelectorAll('.s-item')[idx].querySelectorAll('span[contenteditable]');
-            inputs[0].innerText = m[1];
-            inputs[1].innerText = m[3];
+            inputs[0].innerText = m[1]; inputs[1].innerText = m[3];
         }
     });
+
+    // --- 自動抽出ロジック (GOALS/SUBS/CARDS) ---
+    const statsStartIdx = lines.findIndex(l => l.match(/^\d+SH/));
+    const scorerSection = lines.slice(splitIdx + 1, statsStartIdx !== -1 ? statsStartIdx : undefined);
+    let hGoalData = [], aGoalData = [];
+    let currentSide = 'home';
+    scorerSection.forEach(l => {
+        if(l.includes(aName)) currentSide = 'away';
+        const m = l.match(/(\d+[\+\d]*'*)\s*(.+)/);
+        if(m) {
+            const time = m[1].replace(/\*/g, ''), name = m[2].trim();
+            if(currentSide === 'home') hGoalData.push({time, name}); else aGoalData.push({time, name});
+        }
+    });
+
+    const summarize = (data) => {
+        const res = [];
+        data.forEach(d => {
+            const exist = res.find(r => r.name === d.name);
+            if(exist) exist.time += " " + d.time; else res.push({...d});
+        });
+        return res;
+    };
+
+    const progStart = lines.findIndex(l => l.includes("試合経過"));
+    const progLines = progStart !== -1 ? lines.slice(progStart + 1) : [];
+    let hSubs = [], aSubs = [], hCards = [], aCards = [];
+    let lastTime = "";
+    const allGoalNames = [...hGoalData, ...aGoalData].map(g => g.name);
+
+    progLines.forEach((l, i) => {
+        const tM = l.match(/(\d+[\+\d]*'*)/);
+        if(tM) lastTime = tM[1].replace(/\*/g, '');
+        if(l.includes("OUT")) {
+            const inLine = progLines[i+1] || "";
+            const outP = l.replace("OUT", "").trim();
+            const inP = inLine.includes("IN") ? inLine.replace("IN", "").trim() : "";
+            if(l.includes('\t') || l.startsWith(' ')) aSubs.push({time: lastTime, out: outP, in: inP});
+            else hSubs.push({time: lastTime, out: outP, in: inP});
+        } else if(lastTime && l.match(/^[^\d'A-Z]{2,}/) && !allGoalNames.includes(l.trim()) && !l.includes("試合")) {
+            const name = l.trim();
+            if(l.includes('\t') || l.startsWith(' ')) aCards.push({time: lastTime, name});
+            else hCards.push({time: lastTime, name});
+        }
+    });
+
+    const fillSlots = (side, type, data) => {
+        const slots = document.getElementById(`${side}${type}-list`).querySelectorAll('.slot');
+        data.forEach((d, i) => {
+            if(!slots[i]) return;
+            if(type === 'g') {
+                const n = slots[i].querySelector('.g-name'); n.innerText = d.name; autoShrink(n, 60, 8.5);
+                slots[i].querySelector('.g-time').innerText = d.time;
+            } else if(type === 's') {
+                slots[i].querySelector('.sub-time').innerText = d.time;
+                const ns = slots[i].querySelectorAll('.sub-p');
+                ns[0].innerText = d.out; autoShrink(ns[0], 60, 8.5);
+                ns[1].innerText = d.in; autoShrink(ns[1], 60, 8.5);
+            } else if(type === 'c') {
+                const n = slots[i].querySelector('.g-name'); n.innerText = d.name; autoShrink(n, 60, 8.5);
+                slots[i].querySelector('.sub-time').innerText = d.time;
+                slots[i].querySelector('.c-box').classList.add('yellow');
+            }
+        });
+    };
+    fillSlots('h', 'g', summarize(hGoalData)); fillSlots('a', 'g', summarize(aGoalData));
+    fillSlots('h', 's', hSubs); fillSlots('a', 's', aSubs);
+    fillSlots('h', 'c', hCards); fillSlots('a', 'c', aCards);
 }
 
 function parseMember() {
@@ -338,8 +375,7 @@ function parseMember() {
         for(let i=0; i<11; i++) if(list[i]){
             rows[i].querySelector('.p-pos').innerText = list[i].pos;
             rows[i].querySelector('.p-no').innerText = list[i].no;
-            const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name;
-            autoShrink(n, 95, 10.5);
+            const n = rows[i].querySelector('.p-name'); n.innerText = list[i].name; autoShrink(n, 95, 10.5);
         }
     };
     update('hl', p.filter((_,i)=>i%2===0)); update('al', p.filter((_,i)=>i%2!==0));
@@ -348,16 +384,11 @@ function parseMember() {
 function takePhoto() {
     const area = document.getElementById('capture-area');
     document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'none');
-    const targetScale = 1536 / area.offsetWidth;
-    html2canvas(area, {
-        scale: targetScale, backgroundColor: '#000', logging: false, useCORS: true, allowTaint: true, width: 432, height: 576
-    }).then(c => {
+    html2canvas(area, { scale: 1536/432, backgroundColor: '#000', width: 432, height: 576 }).then(c => {
         document.querySelectorAll('.ctrls').forEach(c => c.style.display = 'flex');
         const res = document.getElementById('res');
         res.innerHTML = '<p style="font-size:10px;color:#34c759;margin:10px 0;">出力完了。画像を長押しして保存してください。</p>';
-        const img = new Image();
-        img.src = c.toDataURL("image/png", 1.0);
-        res.appendChild(img);
+        const img = new Image(); img.src = c.toDataURL("image/png"); res.appendChild(img);
     });
 }
 init();
