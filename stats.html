@@ -164,7 +164,7 @@
     </footer>
 
 <script>
-const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユネットSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
+const TEAM_DICT = {"札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "ジェフ千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀FC", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"};
 const STATS_LABELS = ["ボール保持率", "シュート数", "枠内シュート数", "パス数", "パス成功率", "走行距離", "オフサイド", "コーナーキック", "フリーキック", "ペナルティキック"];
 const POS_L = ["GK", "DF", "MF", "FW"];
 
@@ -315,54 +315,64 @@ function parseStats() {
         }
     });
 
-    // --- 詳細解析: 警告・交代 (修正版) ---
+    // --- 詳細解析: 警告・交代 (完全修正版) ---
     const progLines = progStartIdx !== -1 ? lines.slice(progStartIdx + 1) : [];
     let hSubs = [], aSubs = [], hCards = [], aCards = [];
-    let lastTime = "";
 
-    progLines.forEach((l, i) => {
-        const tM = l.match(/(\d+[\+\d]*\*?')/);
-        if(tM) { lastTime = tM[1].replace(/\*/g, ''); }
-
-        // 交代判定
-        if(l.includes("OUT")) {
-            let subTime = lastTime;
-            const selfTime = l.match(/(\d+[\+\d]*\*?')/);
-            if(selfTime) subTime = selfTime[1].replace(/\*/g, '');
-            else {
-                for(let j=1; j<=2; j++) {
-                    if(progLines[i-j] && progLines[i-j].match(/(\d+[\+\d]*\*?')/)) {
-                        subTime = progLines[i-j].match(/(\d+[\+\d]*\*?')/)[1].replace(/\*/g, '');
-                        break;
-                    }
+    // 特定のインデックス周辺で時間情報を探す補助関数
+    const findNearestTime = (idx) => {
+        for (let offset = 0; offset <= 3; offset++) {
+            // 上下交互に探す
+            for (let dir of [-1, 1]) {
+                const checkIdx = idx + (offset * dir);
+                if (progLines[checkIdx]) {
+                    const m = progLines[checkIdx].match(/(\d+[\+\d]*\*?')/);
+                    if (m) return m[1].replace(/\*/g, '');
                 }
             }
+        }
+        return "";
+    };
+
+    progLines.forEach((l, i) => {
+        // --- 交代判定 ---
+        if(l.includes("OUT")) {
+            const subTime = findNearestTime(i);
             const outP = l.replace(/.*OUT/, "").trim();
             const inLine = (progLines[i+1] || "").trim();
             const inP = inLine.includes("IN") ? inLine.replace(/.*IN/, "").trim() : "";
-            
-            if(hNames.some(hn => outP.includes(hn))) hSubs.push({time: subTime, out: outP, in: inP});
-            else if(aNames.some(an => outP.includes(an))) aSubs.push({time: subTime, out: outP, in: inP});
+            const subObj = {time: subTime, out: outP, in: inP};
+            if(hNames.some(hn => outP.includes(hn))) hSubs.push(subObj);
+            else if(aNames.some(an => outP.includes(an))) aSubs.push(subObj);
             return;
         }
 
-        // 警告判定
-        const cleanL = l.replace(/\s+/g, '');
-        if(cleanL.length >= 2 && !l.includes("IN") && !l.includes("試合") && !l.includes("DAZN") && !tM) {
-            const isGoalEvent = [...hGoalData, ...aGoalData].some(g => g.name.includes(l) && g.time === lastTime);
-            if(isGoalEvent) return;
+        // --- 警告判定 (時間の行、INの行、ノイズは無視) ---
+        const tM = l.match(/(\d+[\+\d]*\*?')/);
+        if(tM || l.includes("IN") || l.includes("試合") || l.includes("DAZN")) return;
 
-            if(hNames.some(hn => l.includes(hn))) hCards.push({time: lastTime, name: l});
-            else if(aNames.some(an => l.includes(an))) aCards.push({time: lastTime, name: l});
+        const cleanName = l.trim();
+        if(cleanName.length >= 2 && !cleanName.match(/^\d+$/)) {
+            const isH = hNames.some(hn => cleanName.includes(hn));
+            const isA = aNames.some(an => cleanName.includes(an));
+            
+            if(isH || isA) {
+                const cardTime = findNearestTime(i);
+                // 得点者リストと時間+名前が完全に一致する場合は除外
+                const isGoalEvent = [...hGoalData, ...aGoalData].some(g => g.name.includes(cleanName) && g.time === cardTime);
+                if(isGoalEvent) return;
+
+                const cardObj = {time: cardTime, name: cleanName};
+                if(isH) hCards.push(cardObj); else aCards.push(cardObj);
+            }
         }
     });
 
     const summarize = (data) => {
         const res = [];
         data.forEach(d => {
-            const exist = res.find(r => r.name === d.name);
-            if(exist) { if(!exist.time.includes(d.time)) exist.time += " " + d.time; } 
-            else res.push({...d});
+            const exist = res.find(r => r.name === d.name && r.time === d.time);
+            if(!exist) res.push({...d});
         });
         return res;
     };
