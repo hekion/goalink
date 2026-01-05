@@ -246,7 +246,6 @@ function parseStats() {
     const noisePatterns = ["みどころ", "戦評", "メンバー予想", "フォーメーション", "スタジアム", "入場者数", "公式記録", "チケット", "試合情報", "DAZN", "ハイライト"];
     const lines = rawInput.split('\n').map(l => l.trim()).filter(l => l && !noisePatterns.some(n => l.includes(n)));
     
-    // 現在入力されているメンバーリストを取得（左右判定の絶対基準にする）
     const hNames = Array.from(document.querySelectorAll('#hl .p-name')).map(el => el.innerText.trim()).filter(n => n);
     const aNames = Array.from(document.querySelectorAll('#al .p-name')).map(el => el.innerText.trim()).filter(n => n);
 
@@ -280,10 +279,10 @@ function parseStats() {
     }
     const sc = document.getElementById('sc'); sc.innerText = `${hScore}-${aScore}`; autoShrink(sc, 85, 32);
 
+    const vi = document.getElementById('vi');
     const stadiumM = rawInput.match(/KO\s*\n\s*(.*)/) || rawInput.match(/スタジアム\s+([^\n\t]+)/);
     const audM = rawInput.match(/入場者数[\s\t]+([\d,]+人)/);
     const dateM = rawInput.match(/\d{4}年\d+月\d+日/);
-    const vi = document.getElementById('vi');
     vi.innerText = `${dateM ? dateM[0] : ''} / ${stadiumM ? stadiumM[1].trim() : ''} / ${audM ? '観客:' + audM[1] : ''}`;
     autoShrink(vi, 400);
 
@@ -297,28 +296,29 @@ function parseStats() {
         }
     });
 
-    // --- 詳細解析ロジック ---
-    const statsStartIdx = lines.findIndex(l => l.match(/^\d+SH/));
-    const scorerSection = lines.slice(splitIdx + 1, statsStartIdx !== -1 ? statsStartIdx : undefined);
+    // --- 詳細解析: 得点者 (AWAYチーム名出現から試合経過の間) ---
+    const awayAppearIdx = lines.findIndex((l, i) => i > splitIdx && aShort && l.includes(aShort));
+    const progStartIdx = lines.findIndex(l => l.includes("試合経過"));
+    
+    const goalSection = lines.slice(awayAppearIdx !== -1 ? awayAppearIdx : splitIdx + 1, progStartIdx !== -1 ? progStartIdx : undefined);
     let hGoalData = [], aGoalData = [];
 
-    scorerSection.forEach(l => {
+    goalSection.forEach(l => {
         if(l.includes("前半") || l.includes("後半")) return;
-        const m = l.match(/(\d+[\+\d]*'*)\s*(.+)/);
-        if(m && m[2].length > 1) { 
-            const time = m[1].replace(/\*/g, '');
-            const name = m[2].trim();
-            if(!name.match(/^\d+$/)) {
-                // 名前がメンバーリストのどちらにいるかで左右を決める（絶対基準）
+        // 時間+名前 または 名前+時間のセットを抽出
+        const m = l.match(/(\d+[\+\d]*'*)\s*(.+)/) || l.match(/(.+)\s*(\d+[\+\d]*'*)/);
+        if(m) {
+            const time = (m[1].match(/\d/) ? m[1] : m[2]).replace(/\*/g, '').trim();
+            const name = (m[1].match(/\d/) ? m[2] : m[1]).trim();
+            if(name.length > 1 && !name.match(/^\d+$/)) {
                 if(hNames.some(hn => name.includes(hn))) hGoalData.push({time, name});
                 else if(aNames.some(an => name.includes(an))) aGoalData.push({time, name});
-                else if(aShort && l.includes(aShort)) aGoalData.push({time, name}); // 予備判定
             }
         }
     });
 
-    const progStart = lines.findIndex(l => l.includes("試合経過"));
-    const progLines = progStart !== -1 ? lines.slice(progStart + 1) : [];
+    // --- 詳細解析: 警告・交代 (試合経過以降) ---
+    const progLines = progStartIdx !== -1 ? lines.slice(progStartIdx + 1) : [];
     let hSubs = [], aSubs = [], hCards = [], aCards = [];
     let lastTime = "";
 
@@ -332,11 +332,10 @@ function parseStats() {
             const processCard = (targetName) => {
                 if(!targetName || targetName.includes("IN") || targetName.includes("OUT") || targetName.includes("試合") || targetName.length < 2 || targetName.match(/^\d+/) || noisePatterns.some(n => targetName.includes(n))) return;
                 
-                // 得点者と「名前かつ時間」が一致する場合は警告に入れない
+                // 得点者リストと「名前と時間」が一致したらスキップ
                 const isGoalEvent = [...hGoalData, ...aGoalData].some(g => g.name.includes(targetName) && g.time === lastTime);
                 if(isGoalEvent) return;
 
-                // メンバーリストに基づいて左右に振り分け（絶対基準）
                 if(hNames.some(hn => targetName.includes(hn))) hCards.push({time: lastTime, name: targetName});
                 else if(aNames.some(an => targetName.includes(an))) aCards.push({time: lastTime, name: targetName});
             };
@@ -345,11 +344,16 @@ function parseStats() {
         }
 
         if(l.includes("OUT")) {
+            let subTime = lastTime;
+            for(let j=i-1; j>=0; j--){
+                const m = progLines[j].match(/(\d+[\+\d]*'*)/);
+                if(m) { subTime = m[1].replace(/\*/g, ''); break; }
+            }
             const outP = l.replace("OUT", "").trim();
             const inLine = (progLines[i+1] || "").trim();
             const inP = inLine.includes("IN") ? inLine.replace("IN", "").trim() : "";
-            if(hNames.some(hn => outP.includes(hn))) hSubs.push({time: lastTime, out: outP, in: inP});
-            else if(aNames.some(an => outP.includes(an))) aSubs.push({time: lastTime, out: outP, in: inP});
+            if(hNames.some(hn => outP.includes(hn))) hSubs.push({time: subTime, out: outP, in: inP});
+            else if(aNames.some(an => outP.includes(an))) aSubs.push({time: subTime, out: outP, in: inP});
         }
     });
 
@@ -364,8 +368,7 @@ function parseStats() {
     };
 
     const fillSlots = (side, type, data) => {
-        const listId = `${side}${type}-list`;
-        const slots = document.getElementById(listId).querySelectorAll('.slot');
+        const slots = document.getElementById(`${side}${type}-list`).querySelectorAll('.slot');
         slots.forEach(s => { 
             s.querySelectorAll('[contenteditable]').forEach(e => e.innerText = ""); 
             s.querySelectorAll('.c-box').forEach(b => b.classList.remove('yellow','red')); 
