@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RANK 10 | Goalink Analysis tools</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
+        /* --- ①② 共通デザイン・ヘッダー・フッター --- */
         :root { --main-cyan: #4bb8e0; }
         body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
         header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
@@ -16,6 +17,7 @@
         .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
         
+        /* --- ① 操作パネル --- */
         .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 540px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
         textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
         .btn-group { display: flex; gap: 10px; }
@@ -23,6 +25,7 @@
         .btn-parse { background: #007AFF; }
         .btn-photo { background: #34c759; }
 
+        /* --- ③ キャプチャエリア (1:1 正方形 540x540) --- */
         .preview-container { width: 100%; max-width: 540px; display: flex; justify-content: center; }
         #capture-area { 
             width: 540px; height: 540px; background: #000; overflow: hidden; 
@@ -31,20 +34,23 @@
         }
         #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
 
+        /* テーブル幅を530pxに固定して画面内に収める */
         table { width: 530px; margin: 0 auto; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
         th, td { text-align: center; white-space: nowrap; font-weight: 500; overflow: hidden; }
         
+        /* 列幅の精密配分 (合計 530px) */
         .col-r   { width: 28px; }   /* 順位 */
-        .col-t   { width: 155px; }  /* チーム名 */
+        .col-t   { width: 155px; }  /* チーム名 (圧縮対象) */
         .col-m   { width: 30px; }   /* 試 */
         .col-pts { width: 40px; }   /* 点 */
         .col-s   { width: 30px; }   /* 勝・分・負 */
         .col-g   { width: 36px; }   /* 得・失 */
-        .col-gd  { width: 55px; }   /* 差 */
+        .col-gd  { width: 55px; }   /* 差 (3桁対応) */
 
         th { font-size: 11px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; }
         td { font-size: 15px; height: 46px; border-bottom: 1px solid #222; color: #eee; }
 
+        /* チーム名自動縮小設定 */
         .col-t-val { text-align: left; padding-left: 5px; width: 155px; }
         .name-wrapper { width: 150px; overflow: visible; display: flex; align-items: center; }
         .name-inner { font-size: 17px; font-weight: 900; color: #fff; white-space: nowrap; display: inline-block; transform-origin: left center; }
@@ -54,6 +60,7 @@
 
         #res img { margin-top: 20px; width: 100%; max-width: 540px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #333; }
 
+        /* --- ② フッター --- */
         footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
         .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
         .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -108,13 +115,6 @@
     <script>
         const teamDict = { "札幌": "北海道コンサドーレ札幌", "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎F": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "秋田": "ブラウブリッツ秋田", "仙台": "ベガルタ仙台", "山形": "モンテディオ山形", "栃木SC": "栃木SC", "栃木C": "栃木シティ", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "徳島ヴォルティス", "愛媛": "愛媛FC", "今治": "FC今治", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球" };
 
-        function cleanText(text) {
-            if (!text) return "";
-            let cleaned = text.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-            cleaned = cleaned.replace(/(.{3,})\1/g, "$1");
-            return cleaned;
-        }
-
         function getConvertedName(name) {
             if(!name) return "";
             let n = name.trim();
@@ -123,12 +123,16 @@
         }
 
         function parseStanding() {
-            let raw = cleanText(document.getElementById('it').value);
-            // 修正：以前の解析ロジック（トークン分割）に戻しつつ、重複・全角対応を統合
+            let raw = document.getElementById('it').value;
+
+            // クリーニング処理（全角半角変換、重複チーム名削除）
+            raw = raw.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+            raw = raw.replace(/(.{3,})\1/g, "$1");
+
             const allTokens = raw.split(/\s+/).filter(t => t !== "");
             let data = [];
             for (let i = 0; i < allTokens.length; i++) {
-                if (allTokens[i].match(/^\d{1,2}$/) && allTokens[i+1] && !allTokens[i+1].match(/^-?\d+$/)) {
+                if (allTokens[i].match(/^\d{1,2}$/) && allTokens[i+1] && !allTokens[i+1].match(/^\d+$/)) {
                     let stats = [];
                     for(let j=i+2; j<i+15; j++) {
                         if(allTokens[j] && allTokens[j].match(/^[+-]?\d+$/)) stats.push(allTokens[j]);
@@ -137,7 +141,7 @@
                     if(stats.length >= 8) {
                         data.push({
                             rank: allTokens[i], team: getConvertedName(allTokens[i+1]),
-                            m: stats[1], pts: stats[0], // データの並び順を維持
+                            m: stats[1], pts: stats[0],
                             w: stats[2], d: stats[3], l: stats[4], gf: stats[5], ga: stats[6], gd: stats[7]
                         });
                         i += 9;
@@ -150,9 +154,10 @@
         function renderStanding(data) {
             const body = document.getElementById('standing-body');
             let html = "";
-            data.slice(0, 10).forEach(d => {
+            data.slice(0, 10).forEach((d) => {
                 const gdVal = parseInt(d.gd);
                 const gdDisplay = gdVal > 0 ? '+' + gdVal : gdVal;
+
                 html += `<tr>
                     <td contenteditable="true">${d.rank}</td>
                     <td class="col-t-val">
@@ -177,9 +182,9 @@
             document.querySelectorAll('.name-inner').forEach(el => {
                 el.style.fontSize = "17px";
                 el.style.transform = "scaleX(1)";
-                const currentWidth = el.getBoundingClientRect().width;
-                if (currentWidth > MAX_W) {
-                    el.style.transform = `scaleX(${MAX_W / currentWidth})`;
+                if (el.offsetWidth > MAX_W) {
+                    const ratio = MAX_W / el.offsetWidth;
+                    el.style.transform = `scaleX(${ratio})`;
                 }
             });
         }
@@ -191,13 +196,12 @@
                     scale: 2, 
                     backgroundColor: "#000",
                     width: 540,
-                    height: 540,
-                    useCORS: true
+                    height: 540
                 }).then(c => {
                     const res = document.getElementById('res');
                     res.innerHTML = '';
                     const img = new Image();
-                    img.src = c.toDataURL("image/png");
+                    img.src = c.toDataURL();
                     res.appendChild(img);
                 });
             }, 50);
