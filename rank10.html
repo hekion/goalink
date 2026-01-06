@@ -19,10 +19,9 @@
         .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 540px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
         textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
         .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        button { flex: 1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .btn-parse { background: #007AFF; }
         .btn-photo { background: #34c759; }
-        button:active { opacity: 0.7; transform: scale(0.98); }
 
         .preview-container { width: 100%; max-width: 540px; display: flex; justify-content: center; }
         #capture-area { 
@@ -35,15 +34,15 @@
         table { width: 530px; margin: 0 auto; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
         th, td { text-align: center; white-space: nowrap; font-weight: 500; overflow: hidden; }
         
-        .col-r   { width: 28px; }
-        .col-t   { width: 155px; }
-        .col-m   { width: 30px; }
-        .col-pts { width: 40px; }
-        .col-s   { width: 30px; }
-        .col-g   { width: 36px; }
-        .col-gd  { width: 55px; }
+        .col-r   { width: 28px; }   /* 順位 */
+        .col-t   { width: 155px; }  /* チーム名 */
+        .col-m   { width: 30px; }   /* 試 */
+        .col-pts { width: 40px; }   /* 点 */
+        .col-s   { width: 30px; }   /* 勝・分・負 */
+        .col-g   { width: 36px; }   /* 得・失 */
+        .col-gd  { width: 55px; }   /* 差 */
 
-        th { font-size: 11px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; font-family: 'Oswald', sans-serif; }
+        th { font-size: 11px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; }
         td { font-size: 15px; height: 46px; border-bottom: 1px solid #222; color: #eee; }
 
         .col-t-val { text-align: left; padding-left: 5px; width: 155px; }
@@ -53,7 +52,7 @@
         .col-pts-val { background: rgba(255,255,255,0.08); color: #fff; font-weight: 900; }
         .col-gd-val { font-weight: 700; color: #fff; }
 
-        #res img { margin: 20px auto; width: 100%; max-width: 540px; display: block; border: 1px solid #333; }
+        #res img { margin-top: 20px; width: 100%; max-width: 540px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #333; }
 
         footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
         .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
@@ -77,10 +76,10 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="順位表をここに貼り付け（全角・重複OK）"></textarea>
+        <textarea id="it" placeholder="順位表をコピペ"></textarea>
         <div class="btn-group">
-            <button class="btn-parse" onclick="parseStanding()">1. データを読み込む</button>
-            <button class="btn-photo" onclick="takePhoto()">2. 画像を出力</button>
+            <button class="btn-parse" onclick="parseStanding()">1. 読み込む</button>
+            <button class="btn-photo" onclick="takePhoto()">2. 画像出力</button>
         </div>
     </div>
 
@@ -89,9 +88,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th class="col-r">RANK</th><th class="col-t">TEAM</th><th class="col-m">MP</th><th class="col-pts">PTS</th>
-                        <th class="col-s">W</th><th class="col-s">D</th><th class="col-s">L</th>
-                        <th class="col-g">GF</th><th class="col-g">GA</th><th class="col-gd">GD</th>
+                        <th class="col-r">順</th><th class="col-t">TEAM</th><th class="col-m">試</th><th class="col-pts">点</th>
+                        <th class="col-s">勝</th><th class="col-s">分</th><th class="col-s">負</th>
+                        <th class="col-g">得</th><th class="col-g">失</th><th class="col-gd">差</th>
                     </tr>
                 </thead>
                 <tbody id="standing-body"></tbody>
@@ -111,9 +110,7 @@
 
         function cleanText(text) {
             if (!text) return "";
-            // 全角英数記号を半角に
             let cleaned = text.replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-            // 重複チーム名の削除 (例: いわきFCいわきFC)
             cleaned = cleaned.replace(/(.{3,})\1/g, "$1");
             return cleaned;
         }
@@ -127,25 +124,26 @@
 
         function parseStanding() {
             let raw = cleanText(document.getElementById('it').value);
-            const lines = raw.split(/\n/).filter(l => l.trim() !== "");
+            // 修正：以前の解析ロジック（トークン分割）に戻しつつ、重複・全角対応を統合
+            const allTokens = raw.split(/\s+/).filter(t => t !== "");
             let data = [];
-
-            lines.forEach(line => {
-                const tokens = line.split(/\s+/).filter(t => t !== "");
-                if (tokens.length >= 5) {
-                    const rank = tokens[0];
-                    const rawTeam = tokens[1];
-                    let stats = tokens.slice(2).filter(t => t.match(/^-?\d+$/));
-                    
-                    if (stats.length >= 8) {
+            for (let i = 0; i < allTokens.length; i++) {
+                if (allTokens[i].match(/^\d{1,2}$/) && allTokens[i+1] && !allTokens[i+1].match(/^-?\d+$/)) {
+                    let stats = [];
+                    for(let j=i+2; j<i+15; j++) {
+                        if(allTokens[j] && allTokens[j].match(/^[+-]?\d+$/)) stats.push(allTokens[j]);
+                        if(stats.length >= 8) break;
+                    }
+                    if(stats.length >= 8) {
                         data.push({
-                            rank: rank, team: getConvertedName(rawTeam),
-                            pts: stats[0], m: stats[1], w: stats[2], d: stats[3], l: stats[4],
-                            gf: stats[5], ga: stats[6], gd: stats[7]
+                            rank: allTokens[i], team: getConvertedName(allTokens[i+1]),
+                            m: stats[1], pts: stats[0], // データの並び順を維持
+                            w: stats[2], d: stats[3], l: stats[4], gf: stats[5], ga: stats[6], gd: stats[7]
                         });
+                        i += 9;
                     }
                 }
-            });
+            }
             renderStanding(data);
         }
 
@@ -188,20 +186,21 @@
 
         function takePhoto() {
             autoAdjustNames();
-            const area = document.getElementById('capture-area');
-            html2canvas(area, { 
-                scale: 2, 
-                backgroundColor: "#000",
-                width: 540,
-                height: 540,
-                useCORS: true
-            }).then(c => {
-                const res = document.getElementById('res');
-                res.innerHTML = '';
-                const img = new Image();
-                img.src = c.toDataURL("image/png");
-                res.appendChild(img);
-            });
+            setTimeout(() => {
+                html2canvas(document.getElementById('capture-area'), { 
+                    scale: 2, 
+                    backgroundColor: "#000",
+                    width: 540,
+                    height: 540,
+                    useCORS: true
+                }).then(c => {
+                    const res = document.getElementById('res');
+                    res.innerHTML = '';
+                    const img = new Image();
+                    img.src = c.toDataURL("image/png");
+                    res.appendChild(img);
+                });
+            }, 50);
         }
     </script>
 </body>
