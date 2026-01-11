@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RANK 20 | Goalink Analysis tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --main-cyan: #4bb8e0; }
+        body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; }
+        header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
+        .header-inner { width: 100%; max-width: 600px; text-align: center; }
+        .site-logo { height: 52px; width: auto; margin: 0 auto 10px; display: block; }
+        nav { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+        .nav-link { font-family: 'Oswald', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 4px; color: rgba(255,255,255,0.4); text-decoration: none; border: 1px solid transparent; letter-spacing: 0.1em; line-height: 1; }
+        .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
+        
+        .controls { background: #222; padding: 15px; border-radius: 10px; margin: 20px 0; width: 95%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
+        textarea { width: 100%; height: 80px; background: #333; color: #ccc; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 14px; box-sizing: border-box; outline: none; }
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-parse { background: #007AFF; }
+        .btn-photo { background: #34c759; }
+        select { background: #333; color: white; border-radius: 8px; border: 1px solid #444; padding: 8px; font-size: 14px; outline: none; }
+
+        .preview-container { width: 100%; max-width: 432px; display: flex; justify-content: center; }
+        #capture-area { 
+            width: 432px; height: 540px; background: #000; overflow: hidden; 
+            display: flex; flex-direction: column; padding: 15px 5px; box-sizing: border-box;
+            flex-shrink: 0; position: relative;
+        }
+        #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
+
+        .main-league-title { text-align: center; font-size: 14px; font-weight: 900; letter-spacing: 3px; margin-bottom: 12px; margin-top: 5px; color: #fff; position: relative; z-index: 1; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
+        th, td { text-align: center; white-space: nowrap; line-height: 1.2; font-weight: 500; overflow: hidden; }
+        th { font-size: 8px; color: #666; padding-bottom: 5px; border-bottom: 1px solid #444; }
+        td { font-size: 11px; padding: 3.5px 0; border-bottom: 1px solid #222; color: #eee; }
+        
+        .col-r { width: 20px; } 
+        .col-t { width: 125px; } 
+        .col-m { width: 22px; } 
+        .col-pts { width: 28px; } 
+        .col-s { width: 20px; }
+        .col-pk { width: 26px; }
+        .col-g { width: 22px; color: #777; } 
+        .col-gd { width: 28px; }
+
+        .col-t-val { font-weight: 900 !important; font-size: 11px; color: #fff; text-align: left; padding-left: 4px; }
+        .col-pts-val { background: rgba(255,255,255,0.08); color: #fff; font-weight: 900; }
+        .league-divider { background: #1a1a1a; color: var(--main-cyan); font-size: 9px; font-weight: 900; text-align: center; padding: 4px 0; border-bottom: 1px solid #333; letter-spacing: 2px; }
+        .team-name-inner { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        #res img { margin-top: 20px; width: 100%; max-width: 432px; display: block; margin-left: auto; margin-right: auto; border: 1px solid #333; }
+
+        footer { padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: 40px; }
+        .footer-copy { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #888; margin-bottom: 6px; }
+        .footer-powered { font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <img src="analysis-logo.png" alt="Goalink Analysis tools" class="site-logo">
+            <nav>
+                <a href="index.html" class="nav-link">HOME</a>
+                <a href="lineup.html" class="nav-link">LINEUP</a>
+                <a href="matchday.html" class="nav-link">MATCH</a>
+                <a href="rank20.html" class="nav-link active">RANK 20</a>
+                <a href="rank10.html" class="nav-link">RANK 10</a>
+                <a href="stats.html" class="nav-link">STATS</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="controls">
+        <textarea id="it" placeholder="順位表をEAST/WESTを含めてコピペ"></textarea>
+        <div class="btn-group">
+            <select id="block-mode" style="flex:1;">
+                <option value="true">2ブロック(EAST/WEST分け)</option>
+                <option value="false">通常(20位分連続表示)</option>
+            </select>
+            <button class="btn-parse" onclick="parseStanding()">1. 読み込む</button>
+        </div>
+        <button class="btn-photo" onclick="takePhoto()">2. 画像出力</button>
+    </div>
+
+    <div class="preview-container">
+        <div id="capture-area">
+            <div class="main-league-title" contenteditable="true">LEAGUE STANDING</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-r">順</th><th class="col-t">TEAM</th><th class="col-m">試</th><th class="col-pts">点</th>
+                        <th class="col-s">勝</th><th class="col-pk">PK勝</th><th class="col-pk">PK負</th>
+                        <th class="col-g">得</th><th class="col-g">失</th><th class="col-gd">差</th>
+                    </tr>
+                </thead>
+                <tbody id="standing-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="res"></div>
+
+    <footer>
+        <div class="footer-copy">&copy; Goalink</div>
+        <div class="footer-powered">powered by HEKION</div>
+    </footer>
+
+    <script>
+        const teamDict = {
+            "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "仙台": "ベガルタ仙台", "秋田": "ブラウブリッツ秋田", "山形": "モンテディオ山形", "栃木": "栃木SC", "栃木C": "栃木シティFC", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "札幌": "北海道コンサドーレ札幌", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "ヴォルティス徳島", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"
+        };
+
+        function getConvertedName(name) {
+            if(!name) return "";
+            let n = name.trim();
+            // 重複削除 (例: 鹿島アントラーズ鹿島アントラーズ)
+            if (n.length >= 4 && n.length % 2 === 0) {
+                let half = n.length / 2;
+                if (n.substring(0, half) === n.substring(half)) n = n.substring(0, half);
+            }
+            // 辞書マッチング
+            for (let key in teamDict) {
+                if (n.includes(key)) return teamDict[key];
+            }
+            return n;
+        }
+
+        function parseStanding() {
+            const isTwoBlock = document.getElementById('block-mode').value === "true";
+            let raw = document.getElementById('it').value;
+            raw = raw.replace(/[０-９－＋]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+            
+            const allTokens = raw.split(/\s+/).filter(t => t !== "");
+            let data = [];
+            let currentBlockName = "";
+
+            for (let i = 0; i < allTokens.length; i++) {
+                const token = allTokens[i];
+
+                // ブロック名(EAST/WEST等)の判定：辞書にない英字かつ一定の長さ
+                if (token.match(/^[A-Za-z]+$/) && !teamDict[token] && token.length > 2) {
+                    currentBlockName = token.toUpperCase();
+                    continue;
+                }
+
+                // 数値＋チーム名のパターンを探す
+                if (token.match(/^\d{1,2}$/) && allTokens[i+1] && !allTokens[i+1].match(/^-?\d+$/)) {
+                    let stats = [];
+                    // チーム名の後の数値を最大9個（試合数〜得失点）取得
+                    for(let j=i+2; j < i + 12; j++) {
+                        if(allTokens[j] && allTokens[j].match(/^[+-]?\d+$/)) { 
+                            stats.push(allTokens[j]); 
+                        } else { 
+                            break; 
+                        }
+                        if(stats.length >= 9) break;
+                    }
+
+                    if(stats.length >= 9) {
+                        data.push({
+                            rank: token, 
+                            team: getConvertedName(allTokens[i+1]),
+                            m: stats[0], pts: stats[1], w: stats[2], pkw: stats[3], pkl: stats[4], gf: stats[5], ga: stats[6], gd: stats[7],
+                            block: currentBlockName
+                        });
+                        i += (stats.length + 1); 
+                    }
+                }
+            }
+            renderStanding(data, isTwoBlock);
+        }
+
+        function renderStanding(data, isTwoBlock) {
+            const body = document.getElementById('standing-body');
+            let html = "";
+            let lastBlock = "";
+
+            data.slice(0, 20).forEach((d, index) => {
+                if (isTwoBlock) {
+                    if (index === 0 || (d.block && d.block !== lastBlock)) {
+                        html += `<tr><td colspan="10" class="league-divider" contenteditable="true">${d.block || 'GROUP'}</td></tr>`;
+                        lastBlock = d.block;
+                    }
+                }
+
+                const gdVal = parseInt(d.gd);
+                const gdDisplay = gdVal > 0 ? '+' + gdVal : gdVal;
+
+                html += `<tr>
+                    <td contenteditable="true">${d.rank}</td>
+                    <td class="col-t-val"><span class="team-name-inner" contenteditable="true">${d.team}</span></td>
+                    <td contenteditable="true">${d.m}</td>
+                    <td class="col-pts-val" contenteditable="true">${d.pts}</td>
+                    <td contenteditable="true">${d.w}</td>
+                    <td contenteditable="true">${d.pkw}</td>
+                    <td contenteditable="true">${d.pkl}</td>
+                    <td contenteditable="true">${d.gf}</td>
+                    <td contenteditable="true">${d.ga}</td>
+                    <td class="col-gd-val" contenteditable="true">${gdDisplay}</td>
+                </tr>`;
+            });
+            body.innerHTML = html || '<tr><td colspan="10" style="padding:20px; color:#555;">データが見つかりませんでした</td></tr>';
+        }
+
+        function takePhoto() {
+            html2canvas(document.getElementById('capture-area'), { 
+                scale: 3, 
+                backgroundColor: "#000",
+                width: 432,
+                height: 540
+            }).then(c => {
+                const res = document.getElementById('res');
+                res.innerHTML = '';
+                const img = new Image();
+                img.src = c.toDataURL();
+                res.appendChild(img);
+            });
+        }
+    </script>
+</body>
+</html>
