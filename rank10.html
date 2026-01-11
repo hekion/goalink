@@ -55,8 +55,8 @@
         #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
         table { width: 530px; margin: 0 auto; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
         th, td { text-align: center; white-space: nowrap; font-weight: 500; overflow: hidden; }
-        .col-r { width: 28px; } .col-t { width: 155px; } .col-m { width: 30px; } .col-pts { width: 40px; } .col-s { width: 30px; } .col-g { width: 36px; } .col-gd { width: 55px; }
-        th { font-size: 11px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; }
+        .col-r { width: 28px; } .col-t { width: 155px; } .col-m { width: 30px; } .col-pts { width: 40px; } .col-s { width: 34px; } .col-pk { width: 42px; } .col-g { width: 34px; } .col-gd { width: 50px; }
+        th { font-size: 10px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; }
         td { font-size: 15px; height: 46px; border-bottom: 1px solid #222; color: #eee; }
         .col-t-val { text-align: left; padding-left: 5px; width: 155px; }
         .name-wrapper { width: 150px; overflow: visible; display: flex; align-items: center; }
@@ -98,7 +98,7 @@
                 <thead>
                     <tr>
                         <th class="col-r">順</th><th class="col-t">TEAM</th><th class="col-m">試</th><th class="col-pts">点</th>
-                        <th class="col-s">勝</th><th class="col-s">分</th><th class="col-s">負</th>
+                        <th class="col-s">勝</th><th class="col-pk">PK勝</th><th class="col-pk">PK負</th>
                         <th class="col-g">得</th><th class="col-g">失</th><th class="col-gd">差</th>
                     </tr>
                 </thead>
@@ -120,18 +120,13 @@
         function getConvertedName(name) {
             if(!name) return "";
             let n = name.trim();
-            // 重複削除
             if (n.length >= 4 && n.length % 2 === 0) {
                 let half = n.length / 2;
                 if (n.substring(0, half) === n.substring(half)) n = n.substring(0, half);
             }
-            // 判定用正規化（英数のみ半角、大文字）
             let searchKey = n.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).toUpperCase();
-            
-            // 修正：あいまいな"includes"ではなく、より厳密に判定
             for (let key in teamDict) { 
                 let dictKey = key.toUpperCase();
-                // 入力と辞書キーが完全一致、または「FC東京」のように主要部分が一致する場合
                 if (searchKey === dictKey || searchKey === teamDict[key].toUpperCase() || searchKey.startsWith(dictKey)) {
                     return teamDict[key]; 
                 }
@@ -153,8 +148,16 @@
                     }
                     if(stats.length >= 8) {
                         data.push({
-                            rank: allTokens[i], team: getConvertedName(allTokens[i+1]),
-                            pts: stats[0], m: stats[1], w: stats[2], d: stats[3], l: stats[4], gf: stats[5], ga: stats[6], gd: stats[7]
+                            rank: allTokens[i], 
+                            team: getConvertedName(allTokens[i+1]),
+                            pts: stats[0], // 勝ち点
+                            m: stats[1],   // 試合数
+                            w: stats[2],   // 勝
+                            pkw: stats[3], // PK勝
+                            pkl: stats[4], // PK負
+                            gf: stats[5],  // 得点
+                            ga: stats[6],  // 失点
+                            gd: stats[7]   // 得失点
                         });
                         i += (stats.length + 1); 
                     }
@@ -170,7 +173,19 @@
                 const gdVal = parseInt(d.gd);
                 const gdDisplay = gdVal > 0 ? '+' + gdVal : gdVal;
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td contenteditable="true">${d.rank}</td><td class="col-t-val"><div class="name-wrapper"><div class="name-inner" contenteditable="true">${d.team}</div></div></td><td contenteditable="true">${d.m}</td><td class="col-pts-val" contenteditable="true">${d.pts}</td><td contenteditable="true">${d.w}</td><td contenteditable="true">${d.d}</td><td contenteditable="true">${d.l}</td><td contenteditable="true">${d.gf}</td><td contenteditable="true">${d.ga}</td><td class="col-gd-val" contenteditable="true">${gdDisplay}</td>`;
+                // 並び順: 順位(rank) チーム 試合(m) 勝ち点(pts) 勝(w) PK勝(pkw) PK負(pkl) 得点(gf) 失点(ga) 差(gd)
+                tr.innerHTML = `
+                    <td contenteditable="true">${d.rank}</td>
+                    <td class="col-t-val"><div class="name-wrapper"><div class="name-inner" contenteditable="true">${d.team}</div></div></td>
+                    <td contenteditable="true">${d.m}</td>
+                    <td class="col-pts-val" contenteditable="true">${d.pts}</td>
+                    <td contenteditable="true">${d.w}</td>
+                    <td contenteditable="true">${d.pkw}</td>
+                    <td contenteditable="true">${d.pkl}</td>
+                    <td contenteditable="true">${d.gf}</td>
+                    <td contenteditable="true">${d.ga}</td>
+                    <td class="col-gd-val" contenteditable="true">${gdDisplay}</td>
+                `;
                 body.appendChild(tr);
             });
             autoAdjustNames();
