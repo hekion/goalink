@@ -76,10 +76,10 @@
     </header>
 
     <div class="controls">
-        <textarea id="it" placeholder="順位表をEAST/WESTを含めてコピペ"></textarea>
+        <textarea id="it" placeholder="EAST-A ... (順位表データ) ... EAST-B ..."></textarea>
         <div class="btn-group">
             <select id="block-mode" style="flex:1;">
-                <option value="true">2ブロック(EAST/WEST分け)</option>
+                <option value="true">2ブロック(自動分割)</option>
                 <option value="false">通常(20位分連続表示)</option>
             </select>
             <button class="btn-parse" onclick="parseStanding()">1. 読み込む</button>
@@ -112,18 +112,20 @@
 
     <script>
         const teamDict = {
-            "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "仙台": "ベガルタ仙台", "秋田": "ブラウブリッツ秋田", "山形": "モンテディオ山形", "栃木": "栃木SC", "栃木C": "栃木シティFC", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "札幌": "北海道コンサドーレ札幌", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "ヴォルティス徳島", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"
+            "鹿島": "鹿島アントラーズ", "水戸": "水戸ホーリーホック", "浦和": "浦和レッズ", "千葉": "ジェフユナイテッド千葉", "柏": "柏レイソル", "FC東京": "FC東京", "東京V": "東京ヴェルディ", "町田": "FC町田ゼルビア", "川崎": "川崎フロンターレ", "横浜FM": "横浜F・マリノス", "清水": "清水エスパルス", "名古屋": "名古屋グランパス", "京都": "京都サンガF.C.", "G大阪": "ガンバ大阪", "C大阪": "セレッソ大阪", "神戸": "ヴィッセル神戸", "岡山": "ファジアーノ岡山", "広島": "サンフレッチェ広島", "福岡": "アビスパ福岡", "長崎": "V・ファーレン長崎", "八戸": "ヴァンラーレ八戸", "仙台": "ベバルタ仙台", "秋田": "ブラウブリッツ秋田", "山形": "モンテディオ山形", "栃木C": "栃木シティ", "栃木": "栃木SC", "群馬": "ザスパ群馬", "横浜FC": "横浜FC", "湘南": "湘南ベルマーレ", "相模原": "SC相模原", "札幌": "北海道コンサドーレ札幌", "福島": "福島ユナイテッドFC", "いわき": "いわきFC", "大宮": "RB大宮アルディージャ", "甲府": "ヴァンフォーレ甲府", "松本": "松本山雅FC", "長野": "AC長野パルセイロ", "磐田": "ジュビロ磐田", "藤枝": "藤枝MYFC", "岐阜": "FC岐阜", "新潟": "アルビレックス新潟", "富山": "カターレ富山", "金沢": "ツエーゲン金沢", "FC大阪": "FC大阪", "奈良": "奈良クラブ", "讃岐": "カマタマーレ讃岐", "徳島": "ヴォルティス徳島", "愛媛": "愛媛FC", "今治": "FC今治", "高知": "高知ユナイテッドSC", "滋賀": "レイラック滋賀", "鳥取": "ガイナーレ鳥取", "山口": "レノファ山口FC", "北九州": "ギラヴァンツ北九州", "鳥栖": "サガン鳥栖", "熊本": "ロアッソ熊本", "大分": "大分トリニータ", "宮崎": "テゲバジャーロ宮崎", "鹿児島": "鹿児島ユナイテッドFC", "琉球": "FC琉球"
         };
 
         function getConvertedName(name) {
             if(!name) return "";
             let n = name.trim();
-            // 重複削除 (例: 鹿島アントラーズ鹿島アントラーズ)
+            // 重複削除
             if (n.length >= 4 && n.length % 2 === 0) {
                 let half = n.length / 2;
                 if (n.substring(0, half) === n.substring(half)) n = n.substring(0, half);
             }
             // 辞書マッチング
+            // 栃木Cと栃木SCのように、長い名前を優先的に判定するため辞書順を考慮する必要があるが、
+            // ここでは栃木Cを先に定義して対応
             for (let key in teamDict) {
                 if (n.includes(key)) return teamDict[key];
             }
@@ -133,8 +135,9 @@
         function parseStanding() {
             const isTwoBlock = document.getElementById('block-mode').value === "true";
             let raw = document.getElementById('it').value;
-            raw = raw.replace(/[０-９－＋]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-            
+            // 全角数字や記号を半角に
+            raw = raw.replace(/[０-９－＋－]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+            // 読み込みやすさのために改行等で分割
             const allTokens = raw.split(/\s+/).filter(t => t !== "");
             let data = [];
             let currentBlockName = "";
@@ -142,26 +145,26 @@
             for (let i = 0; i < allTokens.length; i++) {
                 const token = allTokens[i];
 
-                // ブロック名(EAST/WEST等)の判定：辞書にない英字かつ一定の長さ
-                if (token.match(/^[A-Za-z]+$/) && !teamDict[token] && token.length > 2) {
+                // ブロック名の判定 (EAST-A, EAST-B, WESTなど)
+                // チーム名に含まれない、かつ英字・ハイフンを含む文字列
+                if (token.match(/^[A-Za-z0-9\-]+$/) && !token.match(/^\d+$/) && !teamDict[token] && token.length > 2) {
                     currentBlockName = token.toUpperCase();
                     continue;
                 }
 
-                // 数値＋チーム名のパターンを探す
+                // 順位行の解析 (数字 チーム名 数値...)
                 if (token.match(/^\d{1,2}$/) && allTokens[i+1] && !allTokens[i+1].match(/^-?\d+$/)) {
                     let stats = [];
-                    // チーム名の後の数値を最大9個（試合数〜得失点）取得
-                    for(let j=i+2; j < i + 12; j++) {
+                    for(let j=i+2; j < i + 15; j++) {
                         if(allTokens[j] && allTokens[j].match(/^[+-]?\d+$/)) { 
                             stats.push(allTokens[j]); 
-                        } else { 
+                        } else if (stats.length >= 8) {
                             break; 
                         }
-                        if(stats.length >= 9) break;
                     }
 
-                    if(stats.length >= 9) {
+                    // 最低限必要な数値が揃っていれば登録 (試合数〜得失点の計9個程度を想定)
+                    if(stats.length >= 8) {
                         data.push({
                             rank: token, 
                             team: getConvertedName(allTokens[i+1]),
@@ -188,19 +191,19 @@
                     }
                 }
 
-                const gdVal = parseInt(d.gd);
+                const gdVal = parseInt(d.gd) || 0;
                 const gdDisplay = gdVal > 0 ? '+' + gdVal : gdVal;
 
                 html += `<tr>
                     <td contenteditable="true">${d.rank}</td>
                     <td class="col-t-val"><span class="team-name-inner" contenteditable="true">${d.team}</span></td>
-                    <td contenteditable="true">${d.m}</td>
-                    <td class="col-pts-val" contenteditable="true">${d.pts}</td>
-                    <td contenteditable="true">${d.w}</td>
-                    <td contenteditable="true">${d.pkw}</td>
-                    <td contenteditable="true">${d.pkl}</td>
-                    <td contenteditable="true">${d.gf}</td>
-                    <td contenteditable="true">${d.ga}</td>
+                    <td contenteditable="true">${d.m || 0}</td>
+                    <td class="col-pts-val" contenteditable="true">${d.pts || 0}</td>
+                    <td contenteditable="true">${d.w || 0}</td>
+                    <td contenteditable="true">${d.pkw || 0}</td>
+                    <td contenteditable="true">${d.pkl || 0}</td>
+                    <td contenteditable="true">${d.gf || 0}</td>
+                    <td contenteditable="true">${d.ga || 0}</td>
                     <td class="col-gd-val" contenteditable="true">${gdDisplay}</td>
                 </tr>`;
             });
