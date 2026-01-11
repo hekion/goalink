@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+JP:wght@300;700&display=swap" rel="stylesheet">
     <style>
         :root { --main-cyan: #4bb8e0; }
-        body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; overflow-x: hidden; }
+        body { background: #111; color: white; font-family: 'Noto Sans JP', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; overflow-x: hidden; min-height: 100vh; }
         
         /* ヘッダー */
         header { background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.1); width: 100%; position: sticky; top: 0; z-index: 1000; padding: 12px 0; display: flex; justify-content: center; }
@@ -18,8 +18,8 @@
         .nav-link.active { color: var(--main-cyan); background: rgba(75, 184, 224, 0.1); border-color: rgba(75, 184, 224, 0.2); }
 
         /* メインコンテンツ */
-        .container { width: 95%; max-width: 800px; margin: 30px 0; }
-        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .container { width: 95%; max-width: 800px; margin: 30px 0; flex-grow: 1; }
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px; }
         @media (min-width: 600px) { .menu-grid { grid-template-columns: 1fr 1fr; } }
 
         /* メニューカード */
@@ -32,6 +32,15 @@
         .menu-info { padding: 15px; }
         .menu-title { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 700; color: var(--main-cyan); margin-bottom: 5px; letter-spacing: 0.05em; }
         .menu-desc { font-size: 12px; color: #aaa; line-height: 1.6; }
+
+        /* 追加のシンプルボタン */
+        .sub-menu { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+        .btn-simple {
+            background: #1a1a1a; border: 1px solid #444; color: #ccc; text-decoration: none;
+            padding: 15px; border-radius: 8px; text-align: center; font-family: 'Oswald', sans-serif;
+            font-size: 14px; font-weight: 700; letter-spacing: 0.1em; transition: all 0.2s;
+        }
+        .btn-simple:hover { background: #333; border-color: var(--main-cyan); color: #fff; }
 
         /* フッター */
         footer { padding: 40px 0; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; background: #000; width: 100%; margin-top: auto; }
@@ -61,7 +70,7 @@
                 <img src="menu-lineup.png" alt="Lineup" class="menu-img">
                 <div class="menu-info">
                     <div class="menu-title">LINEUP GENERATOR</div>
-                    <div class="menu-desc">スタメン・サブメンバーの画像を作成します。フォーマットに合わせた選手リストの読み込みに対応。</div>
+                    <div class="menu-desc">スタメン・サブメンバーの画像を作成します。選手名リストの読み込みに対応。</div>
                 </div>
             </a>
 
@@ -69,15 +78,15 @@
                 <img src="menu-matchday.png" alt="Matchday" class="menu-img">
                 <div class="menu-info">
                     <div class="menu-title">MATCH DAY INFO</div>
-                    <div class="menu-desc">対戦カード、スコア、スタッツ、得点者などの試合結果情報を美しく画像化します。</div>
+                    <div class="menu-desc">対戦カード、スコア、スタッツ、得点者などの試合結果情報を画像化。</div>
                 </div>
             </a>
 
             <a href="rank20.html" class="menu-card">
                 <img src="menu-rank20.png" alt="Rank 20" class="menu-img">
                 <div class="menu-info">
-                    <div class="menu-title">RANK 20 (2 BLOCK)</div>
-                    <div class="menu-desc">20チーム分の順位表を作成。EAST/WESTなどの2ブロック分割表示やPK勝敗にも対応。</div>
+                    <div class="menu-title">RANK 20 (STANDARD)</div>
+                    <div class="menu-desc">20チーム分の標準的な順位表を作成します。</div>
                 </div>
             </a>
 
@@ -85,17 +94,14 @@
                 <img src="menu-rank10.png" alt="Rank 10" class="menu-img">
                 <div class="menu-info">
                     <div class="menu-title">RANK 10</div>
-                    <div class="menu-desc">10チーム分の順位表を作成。シンプルで視認性の高いランキング画像を出力します。</div>
+                    <div class="menu-desc">10チーム分の順位表を作成。シンプルで視認性の高いランキング画像を出力。</div>
                 </div>
             </a>
+        </div>
 
-            <a href="stats.html" class="menu-card">
-                <img src="menu-stats.png" alt="Stats" class="menu-img">
-                <div class="menu-info">
-                    <div class="menu-title">PLAYER STATS</div>
-                    <div class="menu-desc">得点ランキングやアシストランキングなど、個人スタッツに特化した解析画像を作成。</div>
-                </div>
-            </a>
+        <div class="sub-menu">
+            <a href="rank20b.html" class="btn-simple">RANK 20 (EAST/WEST & PK-MODE)</a>
+            <a href="stats.html" class="btn-simple">PLAYER STATS GENERATOR</a>
         </div>
     </div>
 
