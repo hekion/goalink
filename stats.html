@@ -67,6 +67,7 @@
         #hn { text-align: right; } 
         #an { text-align: left; }
         .score-n { font-size: 32px; font-weight: 700; text-align: center; width: 85px; color: #fff; }
+        .pk-score { font-size: 10px; color: var(--main-cyan); font-weight: 700; margin-top: -4px; height: 12px; }
         #vi { font-size: 11px; color: #888; font-weight: 500; white-space: pre; height: 14px; overflow: hidden; margin-top: 4px; letter-spacing: -0.02em; }
 
         .grid { display: grid; grid-template-columns: 155px 92px 155px; gap: 0px; margin-top: 4px; justify-content: center; }
@@ -148,7 +149,10 @@
         <div class="header-stats">
             <div class="score-row">
                 <div id="hn" class="team-n" contenteditable="true" oninput="syncTeamSize()">HOME</div>
-                <div id="sc" class="score-n" contenteditable="true" oninput="autoShrink(this, 85, 32)">0-0</div>
+                <div class="score-center-box">
+                    <div id="sc" class="score-n" contenteditable="true" oninput="autoShrink(this, 85, 32)">0-0</div>
+                    <div id="pk-res" class="pk-score" contenteditable="true"></div>
+                </div>
                 <div id="an" class="team-n" contenteditable="true" oninput="syncTeamSize()">AWAY</div>
             </div>
             <div id="vi" contenteditable="true" oninput="autoShrink(this, 400)">日付 / 会場 / 観客数</div>
