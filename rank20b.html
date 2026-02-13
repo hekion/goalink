@@ -89,7 +89,7 @@
                 <thead>
                     <tr>
                         <th class="col-r">順</th><th class="col-t">TEAM</th><th class="col-m">試</th><th class="col-pts">点</th>
-                        <th class="col-s">勝</th><th class="col-pk">PK勝</th><th class="col-pk">PK負</th>
+                        <th class="col-s">勝</th><th class="col-pk">PK勝</th><th class="col-pk">PK負</th><th class="col-s">負</th>
                         <th class="col-g">得</th><th class="col-g">失</th><th class="col-gd">差</th>
                     </tr>
                 </thead>
@@ -125,40 +125,44 @@
             const lines = raw.split('\n').filter(l => l.trim() !== "");
             
             let html = "";
-            let teamCount = 0;
 
             lines.forEach(line => {
                 const tokens = line.trim().split(/\s+/);
                 if (tokens.length === 0) return;
 
-                // 順位データの解析 (先頭が数字)
                 if (tokens[0].match(/^\d+$/) && tokens.length > 2) {
                     let rank = tokens[0];
                     let teamRaw = tokens[1] || "";
                     let stats = tokens.slice(2).filter(t => t.match(/^-?\d+$/));
 
-                    // 元データ形式：[0:試, 1:点, 2:勝, 3:PK勝, 4:PK負, 5:負, 6:得点, 7:失点, 8:得失点]
+                    // 元データ（stats）: [0:勝点, 1:試合数, 2:勝, 3:PK勝, 4:PK負, 5:負, 6:得, 7:失, 8:差]
                     if (stats.length >= 8) {
-                        const gf = stats[6]; 
-                        const ga = stats[7];
-                        const gdVal = parseInt(stats[8]) || 0;
+                        const mDay = stats[1];  // 試合数
+                        const pts = stats[0];   // 勝点
+                        const win = stats[2];   // 勝
+                        const pkw = stats[3];   // PK勝
+                        const pkl = stats[4];   // PK負
+                        const lose = stats[5];  // 負
+                        const gf = stats[6];    // 得点
+                        const ga = stats[7];    // 失点
+                        const gdVal = parseInt(stats[8]) || 0; // 得失点差
 
                         html += `<tr>
                             <td contenteditable="true">${rank}</td>
                             <td class="col-t-val"><span class="team-name-inner" contenteditable="true">${getConvertedName(teamRaw)}</span></td>
-                            <td contenteditable="true">${stats[0]}</td>
-                            <td class="col-pts-val" contenteditable="true">${stats[1]}</td>
-                            <td contenteditable="true">${stats[2]}</td>
-                            <td contenteditable="true">${stats[3]}</td>
-                            <td contenteditable="true">${stats[4]}</td>
+                            <td contenteditable="true">${mDay}</td>
+                            <td class="col-pts-val" contenteditable="true">${pts}</td>
+                            <td contenteditable="true">${win}</td>
+                            <td contenteditable="true">${pkw}</td>
+                            <td contenteditable="true">${pkl}</td>
+                            <td contenteditable="true">${lose}</td>
                             <td contenteditable="true">${gf}</td>
                             <td contenteditable="true">${ga}</td>
                             <td class="col-gd-val" contenteditable="true">${gdVal > 0 ? '+' + gdVal : gdVal}</td>
                         </tr>`;
-                        teamCount++;
                     }
                 } else {
-                    html += `<tr><td colspan="10" class="league-divider" contenteditable="true">${tokens.join(" ").toUpperCase()}</td></tr>`;
+                    html += `<tr><td colspan="11" class="league-divider" contenteditable="true">${tokens.join(" ").toUpperCase()}</td></tr>`;
                 }
             });
             document.getElementById('standing-body').innerHTML = html;
