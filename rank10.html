@@ -55,11 +55,12 @@
         #capture-area::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); opacity: 0.3; pointer-events: none; }
         table { width: 530px; margin: 0 auto; border-collapse: collapse; table-layout: fixed; position: relative; z-index: 1; }
         th, td { text-align: center; white-space: nowrap; font-weight: 500; overflow: hidden; }
-        .col-r { width: 28px; } .col-t { width: 155px; } .col-m { width: 30px; } .col-pts { width: 40px; } .col-s { width: 34px; } .col-pk { width: 42px; } .col-g { width: 34px; } .col-gd { width: 50px; }
+        /* 11列に調整 */
+        .col-r { width: 26px; } .col-t { width: 140px; } .col-m { width: 28px; } .col-pts { width: 36px; } .col-s { width: 30px; } .col-pk { width: 38px; } .col-g { width: 30px; } .col-gd { width: 46px; }
         th { font-size: 10px; color: #666; padding-bottom: 10px; border-bottom: 1px solid #444; }
         td { font-size: 15px; height: 46px; border-bottom: 1px solid #222; color: #eee; }
-        .col-t-val { text-align: left; padding-left: 5px; width: 155px; }
-        .name-wrapper { width: 150px; overflow: visible; display: flex; align-items: center; }
+        .col-t-val { text-align: left; padding-left: 5px; width: 140px; }
+        .name-wrapper { width: 135px; overflow: visible; display: flex; align-items: center; }
         .name-inner { font-size: 17px; font-weight: 900; color: #fff; white-space: nowrap; display: inline-block; transform-origin: left center; }
         .col-pts-val { background: rgba(255,255,255,0.08); color: #fff; font-weight: 900; }
         .col-gd-val { font-weight: 700; color: #fff; }
@@ -98,7 +99,7 @@
                 <thead>
                     <tr>
                         <th class="col-r">順</th><th class="col-t">TEAM</th><th class="col-m">試</th><th class="col-pts">点</th>
-                        <th class="col-s">勝</th><th class="col-pk">PK勝</th><th class="col-pk">PK負</th>
+                        <th class="col-s">勝</th><th class="col-pk">PK勝</th><th class="col-pk">PK負</th><th class="col-s">負</th>
                         <th class="col-g">得</th><th class="col-g">失</th><th class="col-gd">差</th>
                     </tr>
                 </thead>
@@ -144,20 +145,21 @@
                     let stats = [];
                     for(let j=i+2; j < allTokens.length; j++) {
                         if(allTokens[j].match(/^[+-]?\d+$/)) { stats.push(allTokens[j]); } else { break; }
-                        if(stats.length >= 8) break;
+                        if(stats.length >= 9) break;
                     }
-                    if(stats.length >= 8) {
+                    if(stats.length >= 9) {
                         data.push({
                             rank: allTokens[i], 
                             team: getConvertedName(allTokens[i+1]),
-                            pts: stats[0], // 勝ち点
-                            m: stats[1],   // 試合数
-                            w: stats[2],   // 勝
-                            pkw: stats[3], // PK勝
-                            pkl: stats[4], // PK負
-                            gf: stats[5],  // 得点
-                            ga: stats[6],  // 失点
-                            gd: stats[7]   // 得失点
+                            pts: stats[0],  // 勝点
+                            m: stats[1],    // 試合数
+                            w: stats[2],    // 勝
+                            pkw: stats[3],  // PK勝
+                            pkl: stats[4],  // PK負
+                            lose: stats[5], // 負
+                            gf: stats[6],   // 得点
+                            ga: stats[7],   // 失点
+                            gd: stats[8]    // 差
                         });
                         i += (stats.length + 1); 
                     }
@@ -173,7 +175,6 @@
                 const gdVal = parseInt(d.gd);
                 const gdDisplay = gdVal > 0 ? '+' + gdVal : gdVal;
                 const tr = document.createElement('tr');
-                // 並び順: 順位(rank) チーム 試合(m) 勝ち点(pts) 勝(w) PK勝(pkw) PK負(pkl) 得点(gf) 失点(ga) 差(gd)
                 tr.innerHTML = `
                     <td contenteditable="true">${d.rank}</td>
                     <td class="col-t-val"><div class="name-wrapper"><div class="name-inner" contenteditable="true">${d.team}</div></div></td>
@@ -182,6 +183,7 @@
                     <td contenteditable="true">${d.w}</td>
                     <td contenteditable="true">${d.pkw}</td>
                     <td contenteditable="true">${d.pkl}</td>
+                    <td contenteditable="true">${d.lose}</td>
                     <td contenteditable="true">${d.gf}</td>
                     <td contenteditable="true">${d.ga}</td>
                     <td class="col-gd-val" contenteditable="true">${gdDisplay}</td>
@@ -192,7 +194,7 @@
         }
 
         function autoAdjustNames() {
-            const MAX_W = 150; 
+            const MAX_W = 135; 
             document.querySelectorAll('.name-inner').forEach(el => {
                 el.style.fontSize = "17px"; el.style.transform = "scaleX(1)";
                 if (el.offsetWidth > MAX_W) { el.style.transform = `scaleX(${MAX_W / el.offsetWidth})`; }
