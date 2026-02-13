@@ -125,36 +125,42 @@
             const lines = raw.split('\n').filter(l => l.trim() !== "");
             
             let html = "";
-            let teamCount = 0;
 
             lines.forEach(line => {
                 const tokens = line.trim().split(/\s+/);
                 if (tokens.length === 0) return;
 
-                // 順位データの解析 (先頭が数字)
-                if (tokens[0].match(/^\d+$/) && tokens.length > 2) {
+                if (tokens[0].match(/^\d+$/) && tokens.length > 5) {
                     let rank = tokens[0];
                     let teamRaw = tokens[1] || "";
                     let stats = tokens.slice(2).filter(t => t.match(/^-?\d+$/));
 
-                    if (stats.length >= 8) {
-                        const gdVal = parseInt(stats[7]) || 0;
+                    // 入力データ並び順 (インデックス):
+                    // 0:試, 1:点, 2:勝, 3:分, 4:PK勝, 5:PK負, 6:負, 7:得, 8:失, 9:差
+                    if (stats.length >= 10) {
+                        const m = stats[0];
+                        const pts = stats[1];
+                        const w = stats[2];
+                        const pkw = stats[4];
+                        const pkl = stats[5];
+                        const gf = stats[7]; // 得点
+                        const ga = stats[8]; // 失点
+                        const gd = stats[9]; // 差
+
                         html += `<tr>
                             <td contenteditable="true">${rank}</td>
                             <td class="col-t-val"><span class="team-name-inner" contenteditable="true">${getConvertedName(teamRaw)}</span></td>
-                            <td contenteditable="true">${stats[0]}</td>
-                            <td class="col-pts-val" contenteditable="true">${stats[1]}</td>
-                            <td contenteditable="true">${stats[2]}</td>
-                            <td contenteditable="true">${stats[3]}</td>
-                            <td contenteditable="true">${stats[4]}</td>
-                            <td contenteditable="true">${stats[5]}</td>
-                            <td contenteditable="true">${stats[6]}</td>
-                            <td class="col-gd-val" contenteditable="true">${gdVal > 0 ? '+' + gdVal : gdVal}</td>
+                            <td contenteditable="true">${m}</td>
+                            <td class="col-pts-val" contenteditable="true">${pts}</td>
+                            <td contenteditable="true">${w}</td>
+                            <td contenteditable="true">${pkw}</td>
+                            <td contenteditable="true">${pkl}</td>
+                            <td contenteditable="true">${gf}</td>
+                            <td contenteditable="true">${ga}</td>
+                            <td class="col-gd-val" contenteditable="true">${parseInt(gd) > 0 ? '+' + gd : gd}</td>
                         </tr>`;
-                        teamCount++;
                     }
                 } else {
-                    // 数値データを含まない行をラベル（Divider）として扱う
                     html += `<tr><td colspan="10" class="league-divider" contenteditable="true">${tokens.join(" ").toUpperCase()}</td></tr>`;
                 }
             });
@@ -162,7 +168,14 @@
         }
 
         function takePhoto() {
-            html2canvas(document.getElementById('capture-area'), { scale: 3, backgroundColor: "#000", width: 432, height: 540 }).then(c => {
+            html2canvas(document.getElementById('capture-area'), { 
+                scale: 3, 
+                backgroundColor: "#000", 
+                width: 432, 
+                height: 540,
+                logging: false,
+                useCORS: true
+            }).then(c => {
                 const res = document.getElementById('res');
                 res.innerHTML = '';
                 const img = new Image();
